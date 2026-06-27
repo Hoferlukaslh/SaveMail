@@ -9,7 +9,12 @@
 
     <ItemGroup>
         <Folder Include="Models\"/>
-        <AvaloniaResource Include="Assets\**"/>
+
+        <!-- Polices d'écriture -->
+        <AvaloniaResource Include="Assets\Fonts\Helvetica\Helvetica.ttf" /> <!-- Textes -->
+
+        <!-- Logos -->
+        <!-- ... -->
     </ItemGroup>
 
     <ItemGroup>
