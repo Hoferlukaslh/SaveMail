@@ -1,8 +1,8 @@
-namespace TestMail;
-
-// J'ai retiré les 'using System' etc. redondants pour éviter les avertissements (CS0105)
 using MimeKit;
 using MsgReader.Outlook;
+using SaveMail.Models;
+
+namespace SaveMail.Services;
 
 public class ExtracteurMailService
 {
@@ -53,7 +53,6 @@ public class ExtracteurMailService
                 };
 
                 using var memoryStream = new System.IO.MemoryStream();
-                // Ajout du '?' pour corriger l'avertissement CS8602
                 part.Content?.DecodeTo(memoryStream); 
                 pieceJointe.Contenu = memoryStream.ToArray();
                 pieceJointe.Compatibilite = DeterminerCompatibilite(pieceJointe.TypeMime);
@@ -68,21 +67,16 @@ public class ExtracteurMailService
     private DonneesMail ExtraireMsg(string cheminFichier)
     {
         var donnees = new DonneesMail();
-        
         using var msg = new Storage.Message(cheminFichier);
 
         donnees.Header.Subject = msg.Subject ?? string.Empty;
-        
-        // Correction CS0029 : Extraction de la date depuis le DateTimeOffset
         donnees.Header.Date = (msg.SentOn ?? msg.ReceivedOn ?? System.DateTimeOffset.Now).DateTime;
-        
         donnees.Header.From = msg.Sender?.Email ?? msg.Sender?.DisplayName ?? string.Empty;
 
         foreach (var recipient in msg.Recipients)
         {
             if (string.IsNullOrWhiteSpace(recipient.Email)) continue;
 
-            // Correction CS0117 : Utilisation correcte de l'énumération MsgReader.Outlook.RecipientType
             if (recipient.Type == RecipientType.To)
                 donnees.Header.To.Add(recipient.Email);
             else if (recipient.Type == RecipientType.Cc)

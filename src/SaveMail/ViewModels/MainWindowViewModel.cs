@@ -1,4 +1,7 @@
-﻿using ReactiveUI;
+﻿using System.Collections.ObjectModel;
+using System.Linq;
+using ReactiveUI;
+using SaveMail.Models;
 
 namespace SaveMail.ViewModels;
 
@@ -8,22 +11,31 @@ public class MainWindowViewModel : ViewModelBase
     private bool _archiveUnsupported = false;
     private bool _zipEverything = true;
     private bool _keepOriginalEmail = true;
+    private bool _includeHeader = true;
+    private bool _openFolderAtEnd = true;
+    private string _outputDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
+    
+    public ObservableCollection<FichierMail> FilesQueue { get; } = new();
+
+    public int QueueCount => FilesQueue.Count;
+    public bool HasFiles => FilesQueue.Any();
+
+    public string OutputDirectory
+    {
+        get => _outputDirectory;
+        set => this.RaiseAndSetIfChanged(ref _outputDirectory, value);
+    }
 
     public bool ExtractAttachments
     {
         get => _extractAttachments;
         set
         {
-            // On vérifie manuellement si la valeur change
             if (_extractAttachments == value) return;
-
             this.RaiseAndSetIfChanged(ref _extractAttachments, value);
-            
-            // On notifie l'interface
             this.RaisePropertyChanged(nameof(IsArchiveSectionEnabled));
             this.RaisePropertyChanged(nameof(IsArchiveUnsupportedEnabled));
 
-            // Règles de sécurité
             if (!value)
             {
                 ZipEverything = false;
@@ -39,14 +51,10 @@ public class MainWindowViewModel : ViewModelBase
         set
         {
             if (_zipEverything == value) return;
-
             this.RaiseAndSetIfChanged(ref _zipEverything, value);
             this.RaisePropertyChanged(nameof(IsArchiveUnsupportedEnabled));
 
-            if (value)
-            {
-                ArchiveUnsupported = false;
-            }
+            if (value) ArchiveUnsupported = false;
         }
     }
 
@@ -62,8 +70,25 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _keepOriginalEmail, value);
     }
 
-    // Propriétés calculées pour griser les lignes
+    public bool IncludeHeader
+    {
+        get => _includeHeader;
+        set => this.RaiseAndSetIfChanged(ref _includeHeader, value);
+    }
+
+    public bool OpenFolderAtEnd
+    {
+        get => _openFolderAtEnd;
+        set => this.RaiseAndSetIfChanged(ref _openFolderAtEnd, value);
+    }
+
     public bool IsArchiveSectionEnabled => ExtractAttachments;
-    
     public bool IsArchiveUnsupportedEnabled => ExtractAttachments && !ZipEverything;
-}   
+
+    // Méthode pour rafraichir l'UI des compteurs
+    public void RefreshQueue()
+    {
+        this.RaisePropertyChanged(nameof(QueueCount));
+        this.RaisePropertyChanged(nameof(HasFiles));
+    }
+}

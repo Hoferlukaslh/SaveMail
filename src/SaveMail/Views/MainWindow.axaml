@@ -42,7 +42,6 @@
             <Border Grid.Row="0" Background="{DynamicResource DropForeground}" 
                     CornerRadius="{DynamicResource CardCornerRadius}" Margin="0,0,0,30">
                 <Grid>
-                    
                     <Rectangle Stroke="{DynamicResource DropTirets}" StrokeThickness="2" 
                                StrokeDashArray="6,6" RadiusX="12" RadiusY="12"/>
                     
@@ -61,18 +60,21 @@
                                    HorizontalAlignment="Center" Margin="0,0,0,20"/>
                         
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="15">
-                            <Button Classes="ActionBtn" Content="Parcourir les fichiers" Click="Btn_Click"/>
-                            <Button Classes="ActionBtn" Content="Ajouter un dossier" Click="Btn_Click"/>
+                            <Button Classes="ActionBtn" Content="Parcourir les fichiers" Click="BtnAddFiles_Click"/>
+                            <Button Classes="ActionBtn" Content="Ajouter un dossier" Click="BtnAddFolder_Click"/>
                         </StackPanel>
                     </StackPanel>
                 </Grid>
             </Border>
 
             <Grid Grid.Row="1" ColumnDefinitions="*, Auto" Margin="0,0,0,15">
-                <TextBlock Grid.Column="0" Text="File d'attente (3)" FontWeight="Bold" 
-                           FontSize="{StaticResource FontSizeNormal}" VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="5">
+                    <TextBlock Text="File d'attente (" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding QueueCount}" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}" VerticalAlignment="Center"/>
+                    <TextBlock Text=")" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}" VerticalAlignment="Center"/>
+                </StackPanel>
                 
-                <Button Grid.Column="1" Background="Transparent" Padding="0" Click="Btn_Click" Cursor="Hand">
+                <Button Grid.Column="1" Background="Transparent" Padding="0" Click="BtnClearQueue_Click" Cursor="Hand" IsEnabled="{Binding HasFiles}">
                     <StackPanel Orientation="Horizontal" Spacing="5">
                         <TextBlock Text="{StaticResource IconeTrash}" FontFamily="{StaticResource Phosphor}" 
                                    Foreground="{DynamicResource ColorFontRed}" VerticalAlignment="Center"/>
@@ -82,56 +84,75 @@
                 </Button>
             </Grid>
 
-            <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
-                <StackPanel Spacing="0">
-                    <Border Background="{DynamicResource PrimaryBackgroundSolid}" BorderBrush="{DynamicResource BorderColor}" 
-                            BorderThickness="1,1,1,0" CornerRadius="8,8,0,0" Padding="15">
-                        <Grid ColumnDefinitions="Auto, *">
-                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="{DynamicResource ControlCornerRadius}" 
-                                    Background="{DynamicResource MailIconeBackground}" Margin="0,0,15,0">
-                                <TextBlock Text="{StaticResource IconeMail}" FontFamily="{StaticResource Phosphor}" 
-                                           Foreground="{DynamicResource MailIconeForeground}" FontSize="{StaticResource IconSizeNormal}" 
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock Text="facture_internet_mars.eml" FontSize="{StaticResource FontSizeNormal}"/>
-                                <TextBlock Text="1.2 MB" Foreground="{DynamicResource SecondaryForeground}" FontSize="{StaticResource FontSizeSmall}"/>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                    
-                    <Border Background="{DynamicResource PrimaryBackgroundSolid}" BorderBrush="{DynamicResource BorderColor}" 
-                            BorderThickness="1,1,1,0" Padding="15">
-                        <Grid ColumnDefinitions="Auto, *">
-                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="{DynamicResource ControlCornerRadius}" 
-                                    Background="{DynamicResource MailIconeBackground}" Margin="0,0,15,0">
-                                <TextBlock Text="{StaticResource IconeMail}" FontFamily="{StaticResource Phosphor}" 
-                                           Foreground="{DynamicResource MailIconeForeground}" FontSize="{StaticResource IconSizeNormal}" 
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock Text="photos_vacances.msg" FontSize="{StaticResource FontSizeNormal}"/>
-                                <TextBlock Text="14.5 MB" Foreground="{DynamicResource SecondaryForeground}" FontSize="{StaticResource FontSizeSmall}"/>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
+           <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding FilesQueue}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="{DynamicResource BorderColor}" 
+                                    BorderThickness="1" CornerRadius="8" Margin="0,0,0,10" Padding="15"
+                                    Classes.success="{Binding IsCompleted}"
+                                    Classes.error="{Binding HasError}">
+                                
+                                <Border.Styles>
+                                    <Style Selector="Border">
+                                        <Setter Property="Background" Value="{DynamicResource PrimaryBackgroundSolid}"/>
+                                    </Style>
+                                    <Style Selector="Border.success">
+                                        <Setter Property="Background" Value="#f0fdf4"/>
+                                    </Style>
+                                    <Style Selector="Border.error">
+                                        <Setter Property="Background" Value="#fef2f2"/>
+                                    </Style>
+                                </Border.Styles>
 
-                    <Border Background="{DynamicResource PrimaryBackgroundSolid}" BorderBrush="{DynamicResource BorderColor}" 
-                            BorderThickness="1" CornerRadius="0,0,8,8" Padding="15">
-                        <Grid ColumnDefinitions="Auto, *">
-                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="{DynamicResource ControlCornerRadius}" 
-                                    Background="{DynamicResource MailIconeBackground}" Margin="0,0,15,0">
-                                <TextBlock Text="{StaticResource IconeMail}" FontFamily="{StaticResource Phosphor}" 
-                                           Foreground="{DynamicResource MailIconeForeground}" FontSize="{StaticResource IconSizeNormal}" 
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="Auto, *, Auto">
+                                        
+                                        <Border Grid.Column="0" Width="40" Height="40" CornerRadius="{DynamicResource ControlCornerRadius}" 
+                                                Background="{DynamicResource MailIconeBackground}" Margin="0,0,15,0">
+                                            <TextBlock Text="{StaticResource IconeMail}" FontFamily="{StaticResource Phosphor}" 
+                                                       Foreground="{DynamicResource MailIconeForeground}" FontSize="{StaticResource IconSizeNormal}" 
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,10,0">
+                                            <TextBlock Text="{Binding Name}" FontSize="{StaticResource FontSizeNormal}" TextTrimming="CharacterEllipsis" FontWeight="SemiBold"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                <TextBlock Text="{Binding Size}" Foreground="{DynamicResource SecondaryForeground}" FontSize="{StaticResource FontSizeSmall}"/>
+                                                <TextBlock Text="•" Foreground="{DynamicResource SecondaryForeground}" FontSize="{StaticResource FontSizeSmall}"/>
+                                                <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource SecondaryForeground}" FontSize="{StaticResource FontSizeSmall}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                        
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                            
+                                            <TextBlock Text="{StaticResource IconeCheckCircle}" FontFamily="{StaticResource Phosphor}" 
+                                                       Foreground="#10b981" FontSize="28" VerticalAlignment="Center"
+                                                       IsVisible="{Binding IsCompleted}"/>
+                                            
+                                            <Button Background="Transparent" Padding="8" CornerRadius="20" 
+                                                    Cursor="Hand" Click="BtnRemoveItem_Click" IsVisible="{Binding !IsProcessing}">
+                                                <TextBlock Text="{StaticResource IconeClose}" FontFamily="{StaticResource Phosphor}" 
+                                                           Foreground="{DynamicResource SecondaryForeground}" FontSize="{StaticResource IconSizeMedium}"/>
+                                            </Button>
+                                        </StackPanel>
+
+                                    </Grid>
+
+                                    <ProgressBar Minimum="0" Maximum="100" Value="{Binding Progress}" 
+                                                 Height="4" Margin="0,15,0,0" CornerRadius="2"
+                                                 Foreground="{DynamicResource PrimaryForeground}"
+                                                 IsVisible="{Binding IsProcessing}"/>
+                                </StackPanel>
                             </Border>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock Text="newsletter_hebdo.eml" FontSize="{StaticResource FontSizeNormal}"/>
-                                <TextBlock Text="450 KB" Foreground="{DynamicResource SecondaryForeground}" FontSize="{StaticResource FontSizeSmall}"/>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="0"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
             </ScrollViewer>
         </Grid>
 
@@ -156,17 +177,17 @@
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{StaticResource IconeFolder}" FontFamily="{StaticResource Phosphor}" 
                                                Foreground="{DynamicResource SecondaryForeground}" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="C:\Users\Admin\Desktop\M..." Foreground="{DynamicResource SecondaryForeground}" 
-                                               VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding OutputDirectory}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource SecondaryForeground}" 
+                                               VerticalAlignment="Center" MaxWidth="180"/>
                                 </StackPanel>
                             </Border>
-                            <Button Grid.Column="1" Content="..." Classes="ActionBtn" Margin="10,0,0,0" Click="Btn_Click"/>
+                            <Button Grid.Column="1" Content="..." Classes="ActionBtn" Margin="10,0,0,0" Click="BtnSelectOutput_Click"/>
                         </Grid>
 
                         <TextBlock Text="CONTENU DU PDF" Classes="SectionTitle"/>
                         <Grid ColumnDefinitions="*, Auto" Margin="0,5">
                             <TextBlock Text="Inclure l'en-tête de l'e-mail" VerticalAlignment="Center"/>
-                            <ToggleSwitch Grid.Column="1" IsChecked="True"/>
+                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding IncludeHeader, Mode=TwoWay}"/>
                         </Grid>
                         
                         <Grid ColumnDefinitions="*, Auto" Margin="0,5">
@@ -194,7 +215,7 @@
                         <TextBlock Text="POST-TRAITEMENT" Classes="SectionTitle"/>
                         <Grid ColumnDefinitions="*, Auto" Margin="0,5">
                             <TextBlock Text="Ouvrir le dossier à la fin" VerticalAlignment="Center"/>
-                            <ToggleSwitch Grid.Column="1" IsChecked="True"/>
+                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding OpenFolderAtEnd, Mode=TwoWay}"/>
                         </Grid>
                     </StackPanel>
                 </ScrollViewer>
@@ -203,12 +224,16 @@
                     <StackPanel>
                         <Button Background="{DynamicResource BoutonColorBlue}" Foreground="White" 
                                 CornerRadius="{DynamicResource ControlCornerRadius}" Padding="15" 
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="Btn_Click">
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="BtnProcess_Click"
+                                IsEnabled="{Binding HasFiles}">
                             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
                                 <TextBlock Text="{StaticResource IconeExportFile}" FontFamily="{StaticResource Phosphor}" 
                                            FontSize="{StaticResource IconSizeSmall}" VerticalAlignment="Center"/>
-                                <TextBlock Text="Convertir (3)" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}" 
-                                           VerticalAlignment="Center"/>
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <TextBlock Text="Convertir (" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding QueueCount}" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}" VerticalAlignment="Center"/>
+                                    <TextBlock Text=")" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}" VerticalAlignment="Center"/>
+                                </StackPanel>
                             </StackPanel>
                         </Button>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0" Spacing="5">

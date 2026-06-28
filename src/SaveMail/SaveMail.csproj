@@ -28,5 +28,10 @@
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.1" />
+        <PackageReference Include="MimeKit" Version="4.17.0" />
+        <PackageReference Include="MsgReader" Version="6.0.12" />
+        <PackageReference Include="PDFsharp" Version="6.2.4" />
+        <PackageReference Include="PuppeteerSharp" Version="25.2.1" />
+        <PackageReference Include="QuestPDF" Version="2026.6.1" />
     </ItemGroup>
 </Project>
