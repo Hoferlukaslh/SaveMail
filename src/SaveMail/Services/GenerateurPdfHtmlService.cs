@@ -9,24 +9,78 @@ using SaveMail.Models;
 
 namespace SaveMail.Services;
 
-public class GenerateurPdfHtmlService
+public class GenerateurPdfHtmlService : IAsyncDisposable
 {
+    private IBrowser? _browser;
+    
+    public async Task InitialiserNavigateurAsync()
+    {
+        // On évite d'initialiser deux fois
+        if (_browser != null) return;
+
+        //  Utilisation de DefaultRevision à la place de DefaultChromiumRevision
+        var browserFetcher = new BrowserFetcher();
+        await browserFetcher.DownloadAsync();
+
+        // Configuration pour une furtivité absolue (élimine la fenêtre blanche et la console)
+        var launchOptions = new LaunchOptions
+        {
+            Headless = true,
+            EnqueueAsyncMessages = true, 
+            Args = new[]
+            {
+                // Contournement géométrique : on dessine la fenêtre en dehors de l'écran
+                "--window-position=-2400,-2400", 
+                "--window-size=1280,720",
+                "--screen-info={1280x720}", // Pour les versions récentes de Chromium (m135+)
+
+                // Désactivation du rendu matériel et logiciel
+                "--disable-gpu",                 
+                "--disable-software-rasterizer", 
+                
+                // Sécurité et stabilité
+                "--no-sandbox",                  
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",       
+                
+                // Suppression des éléments d'interface inutiles
+                "--hide-scrollbars",             
+                "--mute-audio",                  
+                "--disable-notifications",       
+                
+                // Désactivation des services Google
+                "--disable-features=Translate,OptimizationHints,MediaRouter",
+                "--disable-background-networking",
+                "--disable-sync",
+                "--disable-default-apps",
+                "--no-default-browser-check",
+                "--no-first-run"
+            }
+        };
+
+        // On assigne l'instance de navigateur ici
+        _browser = await Puppeteer.LaunchAsync(launchOptions);
+    }
+    
+    // 2. La méthode de génération ne lance plus le navigateur, elle utilise celui déjà ouvert
     public async Task<string> GenererAsync(DonneesMail donnees, string repertoireSortie)
     {
+        if (_browser == null)
+        {
+            // Sécurité : si la méthode est appelée avant l'initialisation explicite, on initialise
+            await InitialiserNavigateurAsync();
+        }
+
         string sujetNettoye = NettoyerNomFichier(donnees.Header.Subject);
         if (string.IsNullOrWhiteSpace(sujetNettoye)) sujetNettoye = "Email_Sans_Sujet";
         
         string nomFichier = $"{donnees.Header.Date:yyyy-MM-dd}_{sujetNettoye}.pdf";
         string cheminComplet = Path.Combine(repertoireSortie, nomFichier);
 
-        var browserFetcher = new BrowserFetcher();
-        await browserFetcher.DownloadAsync();
-
-        await using var browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
-        await using var page = await browser.NewPageAsync();
+        // On ouvre juste un nouvel onglet
+        await using var page = await _browser!.NewPageAsync();
 
         string htmlFinal = ConstruireHtml(donnees);
-
         await page.SetContentAsync(htmlFinal);
 
         await page.PdfAsync(cheminComplet, new PdfOptions
@@ -36,7 +90,21 @@ public class GenerateurPdfHtmlService
             MarginOptions = new MarginOptions { Top = "1cm", Bottom = "1cm", Left = "1cm", Right = "1cm" }
         });
 
+        // On ferme l'onglet après le PDF
+        await page.CloseAsync();
+
         return cheminComplet;
+    }
+
+    // 3. Nettoyage : On ferme le navigateur quand on a fini de traiter tous les mails
+    public async ValueTask DisposeAsync()
+    {
+        if (_browser != null)
+        {
+            await _browser.CloseAsync();
+            await _browser.DisposeAsync();
+            _browser = null;
+        }
     }
 
     private string ConstruireHtml(DonneesMail donnees)

@@ -116,21 +116,30 @@ public partial class MainWindow : Window
         if (ViewModel == null || !ViewModel.HasFiles) return;
 
         var extracteur = new ExtracteurMailService();
-        var generateurPdf = new GenerateurPdfHtmlService();
         var fusionPdf = new FusionPdfService();
         var generateurZip = new GenerateurZipService();
 
-        // On ne traite pas les fichiers déjà terminés avec succès
+        // On instancie le générateur PDF avec 'await using' pour qu'il ferme Chromium tout seul à la fin
+        await using var generateurPdf = new GenerateurPdfHtmlService();
+
         var filesToProcess = ViewModel.FilesQueue.Where(f => !f.IsCompleted).ToList();
+        if (!filesToProcess.Any()) return;
+
+        // --- NOUVEAUTÉ : Démarrage unique de Chromium ---
+        // On met à jour l'UI du premier fichier pour montrer qu'on prépare le moteur PDF
+        var premierFichier = filesToProcess.First();
+        premierFichier.IsProcessing = true;
+        premierFichier.StatusText = "Initialisation du moteur PDF...";
+        
+        await generateurPdf.InitialiserNavigateurAsync();
+        // ------------------------------------------------
 
         foreach (var fichierMail in filesToProcess)
         {
             try
             {
-                // Réinitialisation des états au cas où c'est un "Retry"
                 fichierMail.HasError = false; 
                 fichierMail.IsCompleted = false;
-                
                 fichierMail.IsProcessing = true;
                 fichierMail.Progress = 10;
                 fichierMail.StatusText = "Lecture du fichier...";
@@ -139,6 +148,7 @@ public partial class MainWindow : Window
                 fichierMail.Progress = 40;
                 fichierMail.StatusText = "Génération du PDF...";
 
+                // L'appel est le même, mais il utilise l'instance Chromium déjà ouverte
                 string pdfPath = await generateurPdf.GenererAsync(donnees, ViewModel.OutputDirectory);
                 fichierMail.Progress = 70;
 
@@ -163,19 +173,15 @@ public partial class MainWindow : Window
 
                 fichierMail.Progress = 100;
                 fichierMail.IsProcessing = false;
-                
-                // Succès !
                 fichierMail.IsCompleted = true;
-                fichierMail.HasError = false;
                 fichierMail.StatusText = "Terminé";
             }
             catch (Exception ex)
             {
-                // Erreur !
                 fichierMail.IsProcessing = false;
                 fichierMail.IsCompleted = false;
                 fichierMail.HasError = true;
-                fichierMail.StatusText = "Erreur !";
+                fichierMail.StatusText = ex.Message.Length > 25 ? "Erreur de conversion" : ex.Message;
                 Console.WriteLine($"Erreur avec le fichier {fichierMail.Name} : {ex.Message}");
             }
         }
