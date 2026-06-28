@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="SaveMail.App"
              xmlns:local="using:SaveMail"
+             xmlns:System="clr-namespace:System;assembly=mscorlib"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
@@ -12,4 +13,80 @@
     <Application.Styles>
         <FluentTheme />
     </Application.Styles>
+             
+    <Application.Resources>
+        <ResourceDictionary>
+
+            <!-- Police d'écriture -->
+            <FontFamily x:Key="Helvetica">avares://ScholarLog/Assets/Fonts/Helvetica/Helvetica.ttf#Helvetica</FontFamily>
+            <FontFamily x:Key="Phosphor">avares://ScholarLog/Assets/Fonts/Phosphor/Phosphor.ttf#Phosphor</FontFamily>
+            <!--<FontFamily x:Key="PhosphorDuotone">avares://ScholarLog/Assets/Fonts/Phosphor/Phosphor-Duotone.ttf#Phosphor</FontFamily> -->
+            <!--<FontFamily x:Key="HelveticaBold">avares://ScholarLog/Assets/Fonts/Helvetica/Helvetica-Bold.ttf#Helvetica</FontFamily>-->
+
+            <!-- Taille des textes -->
+            <System:Double x:Key="FontSizeLarge">22</System:Double>
+            <System:Double x:Key="FontSizeMedium">18</System:Double>
+            <System:Double x:Key="FontSizeNormal">16</System:Double>
+            <System:Double x:Key="FontSizeSmall">13</System:Double>
+            <System:Double x:Key="FontSizeLogo">22</System:Double>
+
+            <!-- Taille des icones -->
+            <System:Double x:Key="IconSizeLarge">32</System:Double>
+            <System:Double x:Key="IconSizeMedium">28</System:Double>
+            <System:Double x:Key="IconSizeNormal">25</System:Double>
+            <System:Double x:Key="IconSizeSmall">20</System:Double>
+            <System:Double x:Key="IconSizeLogo">30</System:Double>
+
+            <!-- Bords arrondies -->
+            <CornerRadius x:Key="CardCornerRadius">12</CornerRadius>
+            <CornerRadius x:Key="ControlCornerRadius">8</CornerRadius>
+            <CornerRadius x:Key="FieldCornerRadius">7</CornerRadius>
+
+
+            <!-- Les icones dans l'application, des caracter UTF dans la police phophorIcone -->
+            <x:String x:Key="IconeGear">&#xE272;</x:String>
+            <x:String x:Key="IconeSearch">&#xE30C;</x:String>
+            <x:String x:Key="IconeMoon">&#xE58E;</x:String>
+            <x:String x:Key="IconeSun">&#xE472;</x:String>
+            <x:String x:Key="IconeExport">&#xEAF0;</x:String>
+            <x:String x:Key="IconeTrash">&#xE4A6;</x:String>
+            <x:String x:Key="IconeClose">&#xE4F6;</x:String>
+            <x:String x:Key="IconeFolder">&#xE24A;</x:String>
+            <x:String x:Key="IconeUpload">&#xE4BE;</x:String>
+            <x:String x:Key="IconeFile">&#xE230;</x:String>
+            <x:String x:Key="IconeExportFile">&#xE232;</x:String>
+            <x:String x:Key="IconeMail">&#xE218;</x:String>
+            <x:String x:Key="IconeCheckCircle">&#xE184;</x:String>
+
+
+            <!-- Ressources en fonction du thème de l'appareil -->
+            <ResourceDictionary.ThemeDictionaries>
+
+                <!-- Thème sombre -->
+                <ResourceDictionary x:Key="Dark">
+                    <!-- Pas de thème sombre prévu pour l'instant -->
+                </ResourceDictionary>
+
+                <!-- Thème clair -->
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="PrimaryBackground">#DDF0F2F8</SolidColorBrush>
+                    <SolidColorBrush x:Key="PrimaryBackgroundSolid">#F0F2F8</SolidColorBrush>
+
+                    <LinearGradientBrush x:Key="PrimaryBackgroundGradient" StartPoint="0%, 0%" EndPoint="100%, 0%">
+                        <GradientStop Offset="0" Color="#CCDDE1F0"></GradientStop>
+                        <GradientStop Offset="1" Color="#CCFFFFFF"></GradientStop>
+                    </LinearGradientBrush>
+
+                    <!-- ReSharper disable once Xaml.UnexpectedTextToken -->
+                    <WindowIcon x:Key="AppIcon">/Assets/Images/Logo_256.ico</WindowIcon>
+
+                    <!-- Couleur du texte -->
+                    <SolidColorBrush x:Key="PrimaryForeground">#1C1E26</SolidColorBrush>
+                    <SolidColorBrush x:Key="SecondaryForeground">#6E7681</SolidColorBrush>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+             
+             
 </Application>
