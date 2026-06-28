@@ -18,10 +18,10 @@
         <ResourceDictionary>
 
             <!-- Police d'écriture -->
-            <FontFamily x:Key="Helvetica">avares://ScholarLog/Assets/Fonts/Helvetica/Helvetica.ttf#Helvetica</FontFamily>
-            <FontFamily x:Key="Phosphor">avares://ScholarLog/Assets/Fonts/Phosphor/Phosphor.ttf#Phosphor</FontFamily>
-            <!--<FontFamily x:Key="PhosphorDuotone">avares://ScholarLog/Assets/Fonts/Phosphor/Phosphor-Duotone.ttf#Phosphor</FontFamily> -->
-            <!--<FontFamily x:Key="HelveticaBold">avares://ScholarLog/Assets/Fonts/Helvetica/Helvetica-Bold.ttf#Helvetica</FontFamily>-->
+            <FontFamily x:Key="Helvetica">avares://SaveMail/Assets/Fonts/Helvetica/Helvetica.ttf#Helvetica</FontFamily>
+            <FontFamily x:Key="Phosphor">avares://SaveMail/Assets/Fonts/Phosphor/Phosphor.ttf#Phosphor</FontFamily>
+            <!--<FontFamily x:Key="PhosphorDuotone">avares://SaveMail/Assets/Fonts/Phosphor/Phosphor-Duotone.ttf#Phosphor</FontFamily> -->
+            <!--<FontFamily x:Key="HelveticaBold">avares://SaveMail/Assets/Fonts/Helvetica/Helvetica-Bold.ttf#Helvetica</FontFamily>-->
 
             <!-- Taille des textes -->
             <System:Double x:Key="FontSizeLarge">22</System:Double>
@@ -69,20 +69,28 @@
 
                 <!-- Thème clair -->
                 <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush x:Key="PrimaryBackground">#DDF0F2F8</SolidColorBrush>
-                    <SolidColorBrush x:Key="PrimaryBackgroundSolid">#F0F2F8</SolidColorBrush>
-
-                    <LinearGradientBrush x:Key="PrimaryBackgroundGradient" StartPoint="0%, 0%" EndPoint="100%, 0%">
-                        <GradientStop Offset="0" Color="#CCDDE1F0"></GradientStop>
-                        <GradientStop Offset="1" Color="#CCFFFFFF"></GradientStop>
-                    </LinearGradientBrush>
+                    <SolidColorBrush x:Key="PrimaryBackground">#f8fafc</SolidColorBrush>
+                    <SolidColorBrush x:Key="PrimaryBackgroundSolid">#ffffff</SolidColorBrush>
+                    <SolidColorBrush x:Key="DropForeground">#e4efff</SolidColorBrush>
+                    <SolidColorBrush x:Key="DropTirets">#b2d5fd</SolidColorBrush>
+                    <SolidColorBrush x:Key="MailIconeBackground">#e0e7ff</SolidColorBrush>
+                    <SolidColorBrush x:Key="MailIconeForeground">#6059e8</SolidColorBrush>
+                    <SolidColorBrush x:Key="FieldBackground">#f8fafc</SolidColorBrush>
+                    <SolidColorBrush x:Key="BoutonColorBlue">#2563eb</SolidColorBrush>
+                    <SolidColorBrush x:Key="BoutonColorWhite">#afbbca</SolidColorBrush>
+                    <SolidColorBrush x:Key="BorderColor">#cbd5e1</SolidColorBrush>
 
                     <!-- ReSharper disable once Xaml.UnexpectedTextToken -->
                     <WindowIcon x:Key="AppIcon">/Assets/Images/Logo_256.ico</WindowIcon>
 
                     <!-- Couleur du texte -->
-                    <SolidColorBrush x:Key="PrimaryForeground">#1C1E26</SolidColorBrush>
-                    <SolidColorBrush x:Key="SecondaryForeground">#6E7681</SolidColorBrush>
+                    <SolidColorBrush x:Key="PrimaryForeground">#2563eb</SolidColorBrush>
+                    <SolidColorBrush x:Key="SecondaryForeground">#64748b</SolidColorBrush>
+                    <SolidColorBrush x:Key="DisabledFont">#99a0aa</SolidColorBrush>
+                    <SolidColorBrush x:Key="InfoFont">#afbbca</SolidColorBrush>
+
+                    <SolidColorBrush x:Key="ColorFontRed">#ef4646</SolidColorBrush>
+
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>

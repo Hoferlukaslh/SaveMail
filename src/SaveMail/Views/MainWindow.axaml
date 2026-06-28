@@ -1,19 +1,226 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:SaveMail.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:vm="using:SaveMail.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
         x:Class="SaveMail.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="{StaticResource AppIcon}"
-        TransparencyLevelHint="AcrylicBlur, Blur, Transparent"
-        Title="SaveMail">
+        Title="SaveMail"
+        FontFamily="{StaticResource Helvetica}"
+        Background="{DynamicResource PrimaryBackground}"
+        MinHeight="700" MinWidth="900"
+        WindowStartupLocation="CenterScreen">
 
-    <Design.DataContext>
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
+    <Window.Styles>
+        <Style Selector="TextBlock.SectionTitle">
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryForeground}"/>
+            <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,20,0,10"/>
+        </Style>
+        <Style Selector="ToggleSwitch">
+            <Setter Property="OnContent" Value="{x:Null}"/>
+            <Setter Property="OffContent" Value="{x:Null}"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+        </Style>
+        <Style Selector="Button.ActionBtn">
+            <Setter Property="Background" Value="{DynamicResource PrimaryBackgroundSolid}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+    </Window.Styles>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Grid ColumnDefinitions="*, 360">
+        
+        <Grid Grid.Column="0" RowDefinitions="Auto, Auto, *" Margin="30">
+            
+            <Border Grid.Row="0" Background="{DynamicResource DropForeground}" 
+                    CornerRadius="{DynamicResource CardCornerRadius}" Margin="0,0,0,30">
+                <Grid>
+                    
+                    <Rectangle Stroke="{DynamicResource DropTirets}" StrokeThickness="2" 
+                               StrokeDashArray="6,6" RadiusX="12" RadiusY="12"/>
+                    
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,40">
+                        <Border Background="{DynamicResource DropForeground}" Width="60" Height="60" 
+                                CornerRadius="30" HorizontalAlignment="Center" Margin="0,0,0,15">
+                            <TextBlock Text="{StaticResource IconeUpload}" FontFamily="{StaticResource Phosphor}" 
+                                       Foreground="{DynamicResource PrimaryForeground}" 
+                                       FontSize="{StaticResource IconSizeMedium}" 
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        
+                        <TextBlock Text="Glissez-déposez vos emails ici" FontWeight="Bold" 
+                                   FontSize="{StaticResource FontSizeMedium}" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                        <TextBlock Text="Formats supportés : .eml, .msg" Foreground="{DynamicResource SecondaryForeground}" 
+                                   HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                        
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="15">
+                            <Button Classes="ActionBtn" Content="Parcourir les fichiers" Click="Btn_Click"/>
+                            <Button Classes="ActionBtn" Content="Ajouter un dossier" Click="Btn_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
 
+            <Grid Grid.Row="1" ColumnDefinitions="*, Auto" Margin="0,0,0,15">
+                <TextBlock Grid.Column="0" Text="File d'attente (3)" FontWeight="Bold" 
+                           FontSize="{StaticResource FontSizeNormal}" VerticalAlignment="Center"/>
+                
+                <Button Grid.Column="1" Background="Transparent" Padding="0" Click="Btn_Click" Cursor="Hand">
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <TextBlock Text="{StaticResource IconeTrash}" FontFamily="{StaticResource Phosphor}" 
+                                   Foreground="{DynamicResource ColorFontRed}" VerticalAlignment="Center"/>
+                        <TextBlock Text="Vider la liste" Foreground="{DynamicResource ColorFontRed}" 
+                                   FontSize="{StaticResource FontSizeSmall}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="0">
+                    <Border Background="{DynamicResource PrimaryBackgroundSolid}" BorderBrush="{DynamicResource BorderColor}" 
+                            BorderThickness="1,1,1,0" CornerRadius="8,8,0,0" Padding="15">
+                        <Grid ColumnDefinitions="Auto, *">
+                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="{DynamicResource ControlCornerRadius}" 
+                                    Background="{DynamicResource MailIconeBackground}" Margin="0,0,15,0">
+                                <TextBlock Text="{StaticResource IconeMail}" FontFamily="{StaticResource Phosphor}" 
+                                           Foreground="{DynamicResource MailIconeForeground}" FontSize="{StaticResource IconSizeNormal}" 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="facture_internet_mars.eml" FontSize="{StaticResource FontSizeNormal}"/>
+                                <TextBlock Text="1.2 MB" Foreground="{DynamicResource SecondaryForeground}" FontSize="{StaticResource FontSizeSmall}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    
+                    <Border Background="{DynamicResource PrimaryBackgroundSolid}" BorderBrush="{DynamicResource BorderColor}" 
+                            BorderThickness="1,1,1,0" Padding="15">
+                        <Grid ColumnDefinitions="Auto, *">
+                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="{DynamicResource ControlCornerRadius}" 
+                                    Background="{DynamicResource MailIconeBackground}" Margin="0,0,15,0">
+                                <TextBlock Text="{StaticResource IconeMail}" FontFamily="{StaticResource Phosphor}" 
+                                           Foreground="{DynamicResource MailIconeForeground}" FontSize="{StaticResource IconSizeNormal}" 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="photos_vacances.msg" FontSize="{StaticResource FontSizeNormal}"/>
+                                <TextBlock Text="14.5 MB" Foreground="{DynamicResource SecondaryForeground}" FontSize="{StaticResource FontSizeSmall}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Background="{DynamicResource PrimaryBackgroundSolid}" BorderBrush="{DynamicResource BorderColor}" 
+                            BorderThickness="1" CornerRadius="0,0,8,8" Padding="15">
+                        <Grid ColumnDefinitions="Auto, *">
+                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="{DynamicResource ControlCornerRadius}" 
+                                    Background="{DynamicResource MailIconeBackground}" Margin="0,0,15,0">
+                                <TextBlock Text="{StaticResource IconeMail}" FontFamily="{StaticResource Phosphor}" 
+                                           Foreground="{DynamicResource MailIconeForeground}" FontSize="{StaticResource IconSizeNormal}" 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="newsletter_hebdo.eml" FontSize="{StaticResource FontSizeNormal}"/>
+                                <TextBlock Text="450 KB" Foreground="{DynamicResource SecondaryForeground}" FontSize="{StaticResource FontSizeSmall}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <Border Grid.Column="1" Background="{DynamicResource PrimaryBackgroundSolid}" 
+                BorderBrush="{DynamicResource BorderColor}" BorderThickness="1,0,0,0">
+            <Grid RowDefinitions="*, Auto">
+                
+                <ScrollViewer Grid.Row="0" Padding="30">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <TextBlock Text="{StaticResource IconeGear}" FontFamily="{StaticResource Phosphor}" 
+                                       Foreground="{DynamicResource SecondaryForeground}" FontSize="{StaticResource IconSizeMedium}" 
+                                       VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="Paramètres d'export" FontWeight="Bold" FontSize="{StaticResource FontSizeMedium}" 
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <TextBlock Text="DOSSIER DE SORTIE" Classes="SectionTitle"/>
+                        <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,10">
+                            <Border Grid.Column="0" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" 
+                                    CornerRadius="{DynamicResource FieldCornerRadius}" Background="{DynamicResource FieldBackground}" Padding="10">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{StaticResource IconeFolder}" FontFamily="{StaticResource Phosphor}" 
+                                               Foreground="{DynamicResource SecondaryForeground}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="C:\Users\Admin\Desktop\M..." Foreground="{DynamicResource SecondaryForeground}" 
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                            <Button Grid.Column="1" Content="..." Classes="ActionBtn" Margin="10,0,0,0" Click="Btn_Click"/>
+                        </Grid>
+
+                        <TextBlock Text="CONTENU DU PDF" Classes="SectionTitle"/>
+                        <Grid ColumnDefinitions="*, Auto" Margin="0,5">
+                            <TextBlock Text="Inclure l'en-tête de l'e-mail" VerticalAlignment="Center"/>
+                            <ToggleSwitch Grid.Column="1" IsChecked="True"/>
+                        </Grid>
+                        
+                        <Grid ColumnDefinitions="*, Auto" Margin="0,5">
+                            <TextBlock Text="Extraire les pièces jointes" VerticalAlignment="Center"/>
+                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding ExtractAttachments, Mode=TwoWay}"/>
+                        </Grid>
+
+                        <TextBlock Text="GESTION DES ARCHIVES" Classes="SectionTitle" IsEnabled="{Binding IsArchiveSectionEnabled}"/>
+                        
+                        <Grid ColumnDefinitions="*, Auto" Margin="0,5" IsEnabled="{Binding IsArchiveUnsupportedEnabled}">
+                            <TextBlock Text="Archiver les formats non supportés" VerticalAlignment="Center"/>
+                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding ArchiveUnsupported, Mode=TwoWay}"/>
+                        </Grid>
+                        
+                        <Grid ColumnDefinitions="*, Auto" Margin="0,5" IsEnabled="{Binding IsArchiveSectionEnabled}">
+                            <TextBlock Text="Tout regrouper dans une archive (.zip)" VerticalAlignment="Center"/>
+                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding ZipEverything, Mode=TwoWay}"/>
+                        </Grid>
+                        
+                        <Grid ColumnDefinitions="*, Auto" Margin="0,5" IsEnabled="{Binding IsArchiveSectionEnabled}">
+                            <TextBlock Text="Conserver l'e-mail d'origine" VerticalAlignment="Center"/>
+                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding KeepOriginalEmail, Mode=TwoWay}"/>
+                        </Grid>
+
+                        <TextBlock Text="POST-TRAITEMENT" Classes="SectionTitle"/>
+                        <Grid ColumnDefinitions="*, Auto" Margin="0,5">
+                            <TextBlock Text="Ouvrir le dossier à la fin" VerticalAlignment="Center"/>
+                            <ToggleSwitch Grid.Column="1" IsChecked="True"/>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <Border Grid.Row="1" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,1,0,0" Padding="30">
+                    <StackPanel>
+                        <Button Background="{DynamicResource BoutonColorBlue}" Foreground="White" 
+                                CornerRadius="{DynamicResource ControlCornerRadius}" Padding="15" 
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="Btn_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                                <TextBlock Text="{StaticResource IconeExportFile}" FontFamily="{StaticResource Phosphor}" 
+                                           FontSize="{StaticResource IconSizeSmall}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Convertir (3)" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}" 
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0" Spacing="5">
+                            <TextBlock Text="{StaticResource IconeCheckCircle}" FontFamily="{StaticResource Phosphor}" 
+                                       Foreground="{DynamicResource InfoFont}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Traitement 100% local" Foreground="{DynamicResource InfoFont}" 
+                                       FontSize="{StaticResource FontSizeSmall}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+            </Grid>
+        </Border>
+    </Grid>
 </Window>
