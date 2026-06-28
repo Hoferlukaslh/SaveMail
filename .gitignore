@@ -28,6 +28,10 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 
+# Fichiers privés pour les tests
+*.eml
+*.msg
+
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
 
