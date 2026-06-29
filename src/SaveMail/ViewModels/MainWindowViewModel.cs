@@ -14,11 +14,26 @@ public class MainWindowViewModel : ViewModelBase
     private bool _includeHeader = true;
     private bool _openFolderAtEnd = true;
     private string _outputDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
+    public int QueueCount => FilesQueue.Count;
+    // compte uniquement les fichiers non terminés
+    public int PendingCount => FilesQueue.Count(f => !f.IsCompleted);
+
+    public bool HasFiles => FilesQueue.Any();
+    // vrai s'il reste des fichiers à traiter
+    public bool HasPendingFiles => PendingCount > 0;
+
+    public void RefreshQueue()
+    {
+        this.RaisePropertyChanged(nameof(QueueCount));
+        this.RaisePropertyChanged(nameof(HasFiles));
+    
+        // On notifie l'interface que ces nouvelles valeurs ont changé
+        this.RaisePropertyChanged(nameof(PendingCount));
+        this.RaisePropertyChanged(nameof(HasPendingFiles));
+    }
     
     public ObservableCollection<FichierMail> FilesQueue { get; } = new();
-
-    public int QueueCount => FilesQueue.Count;
-    public bool HasFiles => FilesQueue.Any();
+    
 
     public string OutputDirectory
     {
@@ -84,11 +99,4 @@ public class MainWindowViewModel : ViewModelBase
 
     public bool IsArchiveSectionEnabled => ExtractAttachments;
     public bool IsArchiveUnsupportedEnabled => ExtractAttachments && !ZipEverything;
-
-    // Méthode pour rafraichir l'UI des compteurs
-    public void RefreshQueue()
-    {
-        this.RaisePropertyChanged(nameof(QueueCount));
-        this.RaisePropertyChanged(nameof(HasFiles));
-    }
 }

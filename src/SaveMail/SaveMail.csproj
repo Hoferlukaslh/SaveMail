@@ -6,6 +6,15 @@
         <UseAvalonia>true</UseAvalonia>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <ApplicationIcon>Assets\Images\Logo_256.ico</ApplicationIcon>
+        <Version>0.1.0</Version>
+        <Title>SaveMail</Title>
+        <Authors>Lukas Hofer</Authors>
+        <Description>Outil d'archivage mail</Description>
+        <PackageProjectUrl>https://github.com/hoferlukaslh/SaveMail</PackageProjectUrl>
+        <PackageLicenseUrl>https://www.gnu.org/licenses/gpl-3.0.html</PackageLicenseUrl>
+        <PackageIcon>Assets\Images\Logo_transparent.png</PackageIcon>
+        <RepositoryUrl>https://github.com/hoferlukaslh/SaveMail</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>
