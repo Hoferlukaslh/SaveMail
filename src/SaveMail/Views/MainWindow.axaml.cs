@@ -263,7 +263,7 @@ public partial class MainWindow : Window
         var filesToProcess = ViewModel.FilesQueue.Where(f => !f.IsCompleted).ToList();
         if (!filesToProcess.Any()) return;
 
-        // 1. ASTUCE CRUCIALE : On récupère toutes les options du ViewModel sur le thread principal (UI) 
+        // récupère toutes les options du ViewModel sur le thread principal (UI) 
         // AVANT de lancer les tâches en arrière-plan.
         bool extractAttachments = ViewModel.ExtractAttachments;
         bool zipEverything = ViewModel.ZipEverything;
@@ -284,21 +284,25 @@ public partial class MainWindow : Window
         {
             try
             {
-                // Ces modifications affectent l'UI, mais on est bien sur le thread principal ici (grâce au await)
                 fichierMail.HasError = false; 
                 fichierMail.IsCompleted = false;
+                fichierMail.HasWarning = false; // Réinitialisation au début du traitement
                 fichierMail.IsProcessing = true;
                 fichierMail.Progress = 10;
                 fichierMail.StatusText = "Lecture du fichier...";
 
-                // On extrait aussi le chemin brut pour éviter de manipuler l'objet UI dans la Task
                 string filePath = fichierMail.Path;
 
                 var donnees = await Task.Run(() => extracteur.Extraire(fichierMail));
                 fichierMail.Progress = 40;
                 fichierMail.StatusText = "Génération du PDF...";
 
-                // On utilise les variables locales au lieu du ViewModel
+                // Détection de l'anomalie par rapport aux paramètres utilisateur
+                if (!extractAttachments && donnees.PiecesJointes.Any())
+                {
+                    fichierMail.HasWarning = true;
+                }
+
                 string pdfPath = await generateurPdf.GenererAsync(donnees, outputDirectory, includeHeader, addAttachmentsToPdf);
                 fichierMail.Progress = 70;
 
@@ -313,9 +317,6 @@ public partial class MainWindow : Window
                 if (zipEverything)
                 {
                     fichierMail.StatusText = "Création de l'archive...";
-                    
-                    // 2. PLUS D'ERREUR ICI : On passe 'keepOriginalEmail' et 'filePath' qui sont de simples variables (bool/string) 
-                    // au lieu de demander au thread secondaire d'aller lire le ViewModel.
                     await Task.Run(() => generateurZip.CreerArchiveComplete(donnees, filePath, pdfPath, keepOriginalEmail));
                     
                     if (File.Exists(pdfPath))
@@ -332,7 +333,17 @@ public partial class MainWindow : Window
                 fichierMail.Progress = 100;
                 fichierMail.IsProcessing = false;
                 fichierMail.IsCompleted = true;
-                fichierMail.StatusText = "Terminé";
+
+                // Assignation du message explicatif selon l'état de l'avertissement
+                if (fichierMail.HasWarning)
+                {
+                    fichierMail.StatusText = $"Terminé (Avertissement : {donnees.PiecesJointes.Count} pièce(s) jointe(s) ignorée(s) car l'option 'Extraire les pièces jointes' est désactivée).";
+                }
+                else
+                {
+                    fichierMail.StatusText = "Terminé";
+                }
+
                 ViewModel.RefreshQueue();
             }
             catch (Exception ex)

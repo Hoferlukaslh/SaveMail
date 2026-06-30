@@ -18,6 +18,13 @@ public class FichierMail : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _hasError, value);
     }
     
+    private bool _hasWarning;
+    public bool HasWarning
+    {
+        get => _hasWarning;
+        set => this.RaiseAndSetIfChanged(ref _hasWarning, value); // Ou la méthode de notification utilisée par votre modèle
+    }
+    
     public string Size
     {
         get
@@ -28,8 +35,6 @@ public class FichierMail : ReactiveObject
             return $"{length / 1024.0:F1} KB";
         }
     }
-
-    // --- NOUVELLES PROPRIÉTÉS POUR L'UI ---
 
     private double _progress;
     public double Progress
@@ -60,7 +65,6 @@ public class FichierMail : ReactiveObject
     }
 }
 
-// (Le reste du fichier reste identique : DonneesMail, EnTeteMail, PieceJointe, CompatibilitePdf)
 public class DonneesMail
 {
     public EnTeteMail Header { get; set; } = new();

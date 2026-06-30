@@ -10,7 +10,7 @@
         Title="SaveMail"
         FontFamily="{StaticResource Helvetica}"
         Background="{DynamicResource PrimaryBackground}"
-        MinHeight="730" MinWidth="850"
+        MinHeight="730" MinWidth="1100"
         WindowStartupLocation="CenterScreen">
 
     <Window.Styles>
@@ -179,14 +179,16 @@
                             <Border BorderBrush="{DynamicResource BorderColor}" Classes="queue-item"
                                     BorderThickness="1" CornerRadius="8" Margin="0,0,0,10" Padding="0"
                                     Classes.success="{Binding IsCompleted}"
-                                    Classes.error="{Binding HasError}">
-                                
-                                <Border.Styles>
+                                    Classes.error="{Binding HasError}"
+                                    Classes.warning="{Binding HasWarning}"> <Border.Styles>
                                     <Style Selector="Border">
                                         <Setter Property="Background" Value="{DynamicResource PrimaryBackgroundSolid}"/>
                                     </Style>
                                     <Style Selector="Border.success">
                                         <Setter Property="Background" Value="{DynamicResource SuccessBackground}"/>
+                                    </Style>
+                                    <Style Selector="Border.warning">
+                                        <Setter Property="Background" Value="{DynamicResource WarningBackground}"/>
                                     </Style>
                                     <Style Selector="Border.error">
                                         <Setter Property="Background" Value="{DynamicResource ErrorBackground}"/>

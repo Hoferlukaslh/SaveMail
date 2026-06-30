@@ -77,6 +77,7 @@
                     
                     <SolidColorBrush x:Key="SuccessBackground">#064e3b</SolidColorBrush> 
                     <SolidColorBrush x:Key="ErrorBackground">#450a0a</SolidColorBrush> 
+                    <SolidColorBrush x:Key="WarningBackground">#655010</SolidColorBrush>
                     
 
                     <!-- ReSharper disable once Xaml.UnexpectedTextToken -->
@@ -106,6 +107,7 @@
                     
                     <SolidColorBrush x:Key="SuccessBackground">#f0fdf4</SolidColorBrush>
                     <SolidColorBrush x:Key="ErrorBackground">#fef2f2</SolidColorBrush>
+                    <SolidColorBrush x:Key="WarningBackground">#fef9c3</SolidColorBrush>
 
                     <!-- ReSharper disable once Xaml.UnexpectedTextToken -->
                     <WindowIcon x:Key="AppIcon">/Assets/Images/Logo_256.ico</WindowIcon>
