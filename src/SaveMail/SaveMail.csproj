@@ -16,6 +16,7 @@
         <PackageIcon>Assets\Images\Logo_transparent.png</PackageIcon>
         <RepositoryUrl>https://github.com/hoferlukaslh/SaveMail</RepositoryUrl>
         <AssemblyVersion></AssemblyVersion>
+        <ApplicationIcon>Assets\Images\Logo_blanc_256.ico</ApplicationIcon>
     </PropertyGroup>
 
     <ItemGroup>

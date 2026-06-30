@@ -281,80 +281,93 @@ public partial class MainWindow : Window
         await generateurPdf.InitialiserNavigateurAsync();
 
         foreach (var fichierMail in filesToProcess)
+{
+    try
+    {
+        fichierMail.HasError = false; 
+        fichierMail.IsCompleted = false;
+        fichierMail.HasWarning = false; // Réinitialisation au début du traitement
+        fichierMail.IsProcessing = true;
+        fichierMail.Progress = 10;
+        fichierMail.StatusText = "Lecture du fichier...";
+
+        string filePath = fichierMail.Path;
+
+        var donnees = await Task.Run(() => extracteur.Extraire(fichierMail));
+        fichierMail.Progress = 40;
+        fichierMail.StatusText = "Génération du PDF...";
+        
+        int piecesIgnorees = 0;
+        
+        if (!extractAttachments)
         {
-            try
+            // Si l'interrupteur principal est coupé, TOUTES les pièces sont ignorées
+            piecesIgnorees = donnees.PiecesJointes.Count;
+        }
+        else if (!zipEverything) 
+        {
+            // Si on ne force pas tout dans un ZIP global, on vérifie le sort de chaque fichier
+            piecesIgnorees = donnees.PiecesJointes.Count(pj => 
+                (pj.Compatibilite == CompatibilitePdf.FusionnerDansPdf && !addAttachmentsToPdf) ||
+                (pj.Compatibilite == CompatibilitePdf.ExtraireDansZip && !archiveUnsupported));
+        }
+
+        if (piecesIgnorees > 0)
+        {
+            fichierMail.HasWarning = true;
+        }
+
+        string pdfPath = await generateurPdf.GenererAsync(donnees, outputDirectory, includeHeader, addAttachmentsToPdf);
+        fichierMail.Progress = 70;
+
+        if (extractAttachments && addAttachmentsToPdf)
+        {
+            fichierMail.StatusText = "Fusion des pièces jointes...";
+            pdfPath = await Task.Run(() => fusionPdf.FusionnerPiecesJointes(pdfPath, donnees.PiecesJointes));
+        }
+        
+        fichierMail.Progress = 85;
+
+        if (zipEverything)
+        {
+            fichierMail.StatusText = "Création de l'archive...";
+            await Task.Run(() => generateurZip.CreerArchiveComplete(donnees, filePath, pdfPath, keepOriginalEmail));
+            
+            if (File.Exists(pdfPath))
             {
-                fichierMail.HasError = false; 
-                fichierMail.IsCompleted = false;
-                fichierMail.HasWarning = false; // Réinitialisation au début du traitement
-                fichierMail.IsProcessing = true;
-                fichierMail.Progress = 10;
-                fichierMail.StatusText = "Lecture du fichier...";
-
-                string filePath = fichierMail.Path;
-
-                var donnees = await Task.Run(() => extracteur.Extraire(fichierMail));
-                fichierMail.Progress = 40;
-                fichierMail.StatusText = "Génération du PDF...";
-
-                // Détection de l'anomalie par rapport aux paramètres utilisateur
-                if (!extractAttachments && donnees.PiecesJointes.Any())
-                {
-                    fichierMail.HasWarning = true;
-                }
-
-                string pdfPath = await generateurPdf.GenererAsync(donnees, outputDirectory, includeHeader, addAttachmentsToPdf);
-                fichierMail.Progress = 70;
-
-                if (extractAttachments && addAttachmentsToPdf)
-                {
-                    fichierMail.StatusText = "Fusion des pièces jointes...";
-                    pdfPath = await Task.Run(() => fusionPdf.FusionnerPiecesJointes(pdfPath, donnees.PiecesJointes));
-                }
-                
-                fichierMail.Progress = 85;
-
-                if (zipEverything)
-                {
-                    fichierMail.StatusText = "Création de l'archive...";
-                    await Task.Run(() => generateurZip.CreerArchiveComplete(donnees, filePath, pdfPath, keepOriginalEmail));
-                    
-                    if (File.Exists(pdfPath))
-                    {
-                        File.Delete(pdfPath);
-                    }
-                }
-                else if (archiveUnsupported && extractAttachments)
-                {
-                    fichierMail.StatusText = "Archivage des fichiers complexes...";
-                    await Task.Run(() => generateurZip.CreerArchive(donnees, pdfPath));
-                }
-
-                fichierMail.Progress = 100;
-                fichierMail.IsProcessing = false;
-                fichierMail.IsCompleted = true;
-
-                // Assignation du message explicatif selon l'état de l'avertissement
-                if (fichierMail.HasWarning)
-                {
-                    fichierMail.StatusText = $"Terminé (Avertissement : {donnees.PiecesJointes.Count} pièce(s) jointe(s) ignorée(s) car l'option 'Extraire les pièces jointes' est désactivée).";
-                }
-                else
-                {
-                    fichierMail.StatusText = "Terminé";
-                }
-
-                ViewModel.RefreshQueue();
-            }
-            catch (Exception ex)
-            {
-                fichierMail.IsProcessing = false;
-                fichierMail.IsCompleted = false;
-                fichierMail.HasError = true;
-                fichierMail.StatusText = ex.Message.Length > 25 ? "Erreur de conversion" : ex.Message;
-                Console.WriteLine($"Erreur avec le fichier {fichierMail.Name} : {ex.Message}");
+                File.Delete(pdfPath);
             }
         }
+        else if (archiveUnsupported && extractAttachments)
+        {
+            fichierMail.StatusText = "Archivage des fichiers complexes...";
+            await Task.Run(() => generateurZip.CreerArchive(donnees, pdfPath));
+        }
+
+        fichierMail.Progress = 100;
+        fichierMail.IsProcessing = false;
+        fichierMail.IsCompleted = true;
+        
+        if (fichierMail.HasWarning)
+        {
+            fichierMail.StatusText = $"Terminé (Avertissement : {piecesIgnorees} pièce(s) ignorée(s) avec ces paramètres).";
+        }
+        else
+        {
+            fichierMail.StatusText = "Terminé";
+        }
+
+        ViewModel.RefreshQueue();
+    }
+    catch (Exception ex)
+    {
+        fichierMail.IsProcessing = false;
+        fichierMail.IsCompleted = false;
+        fichierMail.HasError = true;
+        fichierMail.StatusText = ex.Message.Length > 25 ? "Erreur de conversion" : ex.Message;
+        Console.WriteLine($"Erreur avec le fichier {fichierMail.Name} : {ex.Message}");
+    }
+}
 
         if (openFolderAtEnd && Directory.Exists(outputDirectory))
         {
