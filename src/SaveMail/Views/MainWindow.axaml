@@ -186,10 +186,10 @@
                                         <Setter Property="Background" Value="{DynamicResource PrimaryBackgroundSolid}"/>
                                     </Style>
                                     <Style Selector="Border.success">
-                                        <Setter Property="Background" Value="#f0fdf4"/>
+                                        <Setter Property="Background" Value="{DynamicResource SuccessBackground}"/>
                                     </Style>
                                     <Style Selector="Border.error">
-                                        <Setter Property="Background" Value="#fef2f2"/>
+                                        <Setter Property="Background" Value="{DynamicResource ErrorBackground}"/>
                                     </Style>
                                 </Border.Styles>
 
@@ -219,7 +219,7 @@
     
                                             <Border Grid.Column="0" Width="36" Margin="0,0,10,0" Background="Transparent">
                                                 <TextBlock Text="{StaticResource IconeCheckCircle}" FontFamily="{StaticResource Phosphor}" 
-                                                           Foreground="#10b981" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center" Background="Transparent"
+                                                           Foreground="{DynamicResource SuccessForeground}" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center" Background="Transparent"
                                                            Classes.completed="{Binding IsCompleted}">
                                                     <TextBlock.Styles>
                                                         <Style Selector="TextBlock">
