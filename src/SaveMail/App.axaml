@@ -130,8 +130,8 @@
                     <SolidColorBrush x:Key="Updated">Green</SolidColorBrush>
 
                     <!-- ReSharper disable once Xaml.UnexpectedTextToken -->
-                    <WindowIcon x:Key="AppIcon">/Assets/Images/Logo_noir_256.ico</WindowIcon>
-                    <Bitmap x:Key="AppLogoImage">/Assets/Images/Logo_noir_256.ico</Bitmap>
+                    <WindowIcon x:Key="AppIcon">/Assets/Images/Logo_blanc_256.ico</WindowIcon>
+                    <Bitmap x:Key="AppLogoImage">/Assets/Images/Logo_blanc_256.ico</Bitmap>
 
                     <!-- Couleur du texte -->
                     <SolidColorBrush x:Key="PrimaryForeground">#2563eb</SolidColorBrush>
