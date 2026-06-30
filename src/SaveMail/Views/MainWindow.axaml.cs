@@ -258,40 +258,51 @@ public partial class MainWindow : Window
         var fusionPdf = new FusionPdfService();
         var generateurZip = new GenerateurZipService();
 
-        // On instancie le générateur PDF avec 'await using' pour qu'il ferme Chromium tout seul à la fin
         await using var generateurPdf = new GenerateurPdfHtmlService();
 
         var filesToProcess = ViewModel.FilesQueue.Where(f => !f.IsCompleted).ToList();
         if (!filesToProcess.Any()) return;
 
-        // Démarrage unique de Chromium ---
-        // On met à jour l'UI du premier fichier pour montrer qu'on prépare le moteur PDF
+        // 1. ASTUCE CRUCIALE : On récupère toutes les options du ViewModel sur le thread principal (UI) 
+        // AVANT de lancer les tâches en arrière-plan.
+        bool extractAttachments = ViewModel.ExtractAttachments;
+        bool zipEverything = ViewModel.ZipEverything;
+        bool archiveUnsupported = ViewModel.ArchiveUnsupported;
+        bool keepOriginalEmail = ViewModel.KeepOriginalEmail;
+        bool includeHeader = ViewModel.IncludeHeader;
+        bool addAttachmentsToPdf = ViewModel.AddAttachmentsToPdf;
+        string outputDirectory = ViewModel.OutputDirectory;
+        bool openFolderAtEnd = ViewModel.OpenFolderAtEnd;
+
         var premierFichier = filesToProcess.First();
         premierFichier.IsProcessing = true;
         premierFichier.StatusText = "Initialisation du moteur PDF...";
         
         await generateurPdf.InitialiserNavigateurAsync();
-        // ------------------------------------------------
 
         foreach (var fichierMail in filesToProcess)
         {
             try
             {
+                // Ces modifications affectent l'UI, mais on est bien sur le thread principal ici (grâce au await)
                 fichierMail.HasError = false; 
                 fichierMail.IsCompleted = false;
                 fichierMail.IsProcessing = true;
                 fichierMail.Progress = 10;
                 fichierMail.StatusText = "Lecture du fichier...";
 
+                // On extrait aussi le chemin brut pour éviter de manipuler l'objet UI dans la Task
+                string filePath = fichierMail.Path;
+
                 var donnees = await Task.Run(() => extracteur.Extraire(fichierMail));
                 fichierMail.Progress = 40;
                 fichierMail.StatusText = "Génération du PDF...";
 
-                // L'appel est le même, mais il utilise l'instance Chromium déjà ouverte
-                string pdfPath = await generateurPdf.GenererAsync(donnees, ViewModel.OutputDirectory);
+                // On utilise les variables locales au lieu du ViewModel
+                string pdfPath = await generateurPdf.GenererAsync(donnees, outputDirectory, includeHeader, addAttachmentsToPdf);
                 fichierMail.Progress = 70;
 
-                if (ViewModel.ExtractAttachments)
+                if (extractAttachments && addAttachmentsToPdf)
                 {
                     fichierMail.StatusText = "Fusion des pièces jointes...";
                     pdfPath = await Task.Run(() => fusionPdf.FusionnerPiecesJointes(pdfPath, donnees.PiecesJointes));
@@ -299,12 +310,20 @@ public partial class MainWindow : Window
                 
                 fichierMail.Progress = 85;
 
-                if (ViewModel.ZipEverything)
+                if (zipEverything)
                 {
                     fichierMail.StatusText = "Création de l'archive...";
-                    await Task.Run(() => generateurZip.CreerArchiveComplete(donnees, fichierMail.Path, pdfPath));
+                    
+                    // 2. PLUS D'ERREUR ICI : On passe 'keepOriginalEmail' et 'filePath' qui sont de simples variables (bool/string) 
+                    // au lieu de demander au thread secondaire d'aller lire le ViewModel.
+                    await Task.Run(() => generateurZip.CreerArchiveComplete(donnees, filePath, pdfPath, keepOriginalEmail));
+                    
+                    if (File.Exists(pdfPath))
+                    {
+                        File.Delete(pdfPath);
+                    }
                 }
-                else if (ViewModel.ArchiveUnsupported && ViewModel.ExtractAttachments)
+                else if (archiveUnsupported && extractAttachments)
                 {
                     fichierMail.StatusText = "Archivage des fichiers complexes...";
                     await Task.Run(() => generateurZip.CreerArchive(donnees, pdfPath));
@@ -326,11 +345,11 @@ public partial class MainWindow : Window
             }
         }
 
-        if (ViewModel.OpenFolderAtEnd && Directory.Exists(ViewModel.OutputDirectory))
+        if (openFolderAtEnd && Directory.Exists(outputDirectory))
         {
             Process.Start(new ProcessStartInfo
             {
-                FileName = ViewModel.OutputDirectory,
+                FileName = outputDirectory,
                 UseShellExecute = true,
                 Verb = "open"
             });

@@ -27,7 +27,7 @@ public class GenerateurZipService
         return cheminZip;
     }
     
-    public string CreerArchiveComplete(DonneesMail donnees, string cheminFichierOriginal, string cheminPdf)
+    public string CreerArchiveComplete(DonneesMail donnees, string cheminFichierOriginal, string cheminPdf, bool keepOriginalEmail)
     {
         string nomBase = Path.GetFileNameWithoutExtension(cheminPdf);
         string cheminDossier = Path.GetDirectoryName(cheminPdf) ?? string.Empty;
@@ -36,7 +36,8 @@ public class GenerateurZipService
         using (var fileStream = new FileStream(cheminZip, FileMode.Create))
         using (var archive = new ZipArchive(fileStream, ZipArchiveMode.Create, true))
         {
-            if (File.Exists(cheminFichierOriginal))
+            // ajoute l'email d'origine uniquement si demandé
+            if (keepOriginalEmail && File.Exists(cheminFichierOriginal))
             {
                 archive.CreateEntryFromFile(cheminFichierOriginal, Path.GetFileName(cheminFichierOriginal), CompressionLevel.Optimal);
             }

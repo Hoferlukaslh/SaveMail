@@ -63,24 +63,23 @@ public class GenerateurPdfHtmlService : IAsyncDisposable
     }
     
     // 2. La méthode de génération ne lance plus le navigateur, elle utilise celui déjà ouvert
-    public async Task<string> GenererAsync(DonneesMail donnees, string repertoireSortie)
+    public async Task<string> GenererAsync(DonneesMail donnees, string repertoireSortie, bool includeHeader, bool addAttachmentsToPdf)
     {
         if (_browser == null)
         {
-            // Sécurité : si la méthode est appelée avant l'initialisation explicite, on initialise
             await InitialiserNavigateurAsync();
         }
 
         string sujetNettoye = NettoyerNomFichier(donnees.Header.Subject);
         if (string.IsNullOrWhiteSpace(sujetNettoye)) sujetNettoye = "Email_Sans_Sujet";
-        
+    
         string nomFichier = $"{donnees.Header.Date:yyyy-MM-dd}_{sujetNettoye}.pdf";
         string cheminComplet = Path.Combine(repertoireSortie, nomFichier);
 
-        // On ouvre juste un nouvel onglet
         await using var page = await _browser!.NewPageAsync();
 
-        string htmlFinal = ConstruireHtml(donnees);
+        // On passe les options à la construction HTML
+        string htmlFinal = ConstruireHtml(donnees, includeHeader, addAttachmentsToPdf);
         await page.SetContentAsync(htmlFinal);
 
         await page.PdfAsync(cheminComplet, new PdfOptions
@@ -90,9 +89,7 @@ public class GenerateurPdfHtmlService : IAsyncDisposable
             MarginOptions = new MarginOptions { Top = "1cm", Bottom = "1cm", Left = "1cm", Right = "1cm" }
         });
 
-        // On ferme l'onglet après le PDF
         await page.CloseAsync();
-
         return cheminComplet;
     }
 
@@ -107,17 +104,21 @@ public class GenerateurPdfHtmlService : IAsyncDisposable
         }
     }
 
-    private string ConstruireHtml(DonneesMail donnees)
+    private string ConstruireHtml(DonneesMail donnees, bool includeHeader, bool addAttachmentsToPdf)
+{
+    string contenuBody = !string.IsNullOrWhiteSpace(donnees.CorpsHtml) 
+        ? donnees.CorpsHtml 
+        : $"<pre style='font-family: sans-serif; white-space: pre-wrap;'>{donnees.CorpsTexte}</pre>";
+
+    contenuBody = IntegrerImagesBase64(contenuBody, donnees.PiecesJointes);
+
+    string enTete = string.Empty;
+
+    // L'en-tête est inséré uniquement si l'utilisateur l'a demandé
+    if (includeHeader)
     {
-        string contenuBody = !string.IsNullOrWhiteSpace(donnees.CorpsHtml) 
-            ? donnees.CorpsHtml 
-            : $"<pre style='font-family: sans-serif; white-space: pre-wrap;'>{donnees.CorpsTexte}</pre>";
-
-        contenuBody = IntegrerImagesBase64(contenuBody, donnees.PiecesJointes);
-
         string destinataires = donnees.Header.To.Any() ? string.Join(", ", donnees.Header.To) : "Non spécifié";
-
-        string enTete = $@"
+        enTete = $@"
             <div style='background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-bottom: 20px; font-family: Arial, sans-serif;'>
                 <h2 style='margin: 0 0 15px 0; color: #212529;'>{donnees.Header.Subject}</h2>
                 <table style='width: 100%; font-size: 13px; color: #495057; border-collapse: collapse;'>
@@ -126,9 +127,13 @@ public class GenerateurPdfHtmlService : IAsyncDisposable
                     <tr><td style='padding-bottom: 5px;'><strong>Date :</strong></td><td style='padding-bottom: 5px;'>{donnees.Header.Date:dd.MM.yyyy HH:mm}</td></tr>
                 </table>
             </div><hr style='border: 0; height: 1px; background: #dee2e6; margin-bottom: 20px;' />";
+    }
 
-        string htmlFinal = $"<html><body style='margin: 0; padding: 0;'>{enTete}{contenuBody}";
+    string htmlFinal = $"<html><body style='margin: 0; padding: 0;'>{enTete}{contenuBody}";
 
+    // Les pièces jointes (text/images) sont ajoutées uniquement si l'option est active
+    if (addAttachmentsToPdf)
+    {
         var piecesAides = donnees.PiecesJointes.Where(pj => pj.Compatibilite == CompatibilitePdf.FusionnerDansPdf);
 
         foreach (var pj in piecesAides)
@@ -153,9 +158,10 @@ public class GenerateurPdfHtmlService : IAsyncDisposable
                 }
             }
         }
-
-        return htmlFinal + "</body></html>";
     }
+
+    return htmlFinal + "</body></html>";
+}
 
     private string IntegrerImagesBase64(string html, List<PieceJointe> piecesJointes)
     {

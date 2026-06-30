@@ -12,28 +12,25 @@ public class MainWindowViewModel : ViewModelBase
     private bool _zipEverything = true;
     private bool _keepOriginalEmail = true;
     private bool _includeHeader = true;
+    private bool _addAttachmentsToPdf = true;
     private bool _openFolderAtEnd = true;
     private string _outputDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
+    
     public int QueueCount => FilesQueue.Count;
-    // compte uniquement les fichiers non terminés
     public int PendingCount => FilesQueue.Count(f => !f.IsCompleted);
 
     public bool HasFiles => FilesQueue.Any();
-    // vrai s'il reste des fichiers à traiter
     public bool HasPendingFiles => PendingCount > 0;
 
     public void RefreshQueue()
     {
         this.RaisePropertyChanged(nameof(QueueCount));
         this.RaisePropertyChanged(nameof(HasFiles));
-    
-        // On notifie l'interface que ces nouvelles valeurs ont changé
         this.RaisePropertyChanged(nameof(PendingCount));
         this.RaisePropertyChanged(nameof(HasPendingFiles));
     }
     
     public ObservableCollection<FichierMail> FilesQueue { get; } = new();
-    
 
     public string OutputDirectory
     {
@@ -50,12 +47,14 @@ public class MainWindowViewModel : ViewModelBase
             this.RaiseAndSetIfChanged(ref _extractAttachments, value);
             this.RaisePropertyChanged(nameof(IsArchiveSectionEnabled));
             this.RaisePropertyChanged(nameof(IsArchiveUnsupportedEnabled));
+            this.RaisePropertyChanged(nameof(IsAddAttachmentsToPdfEnabled)); // Mise à jour UI
 
             if (!value)
             {
                 ZipEverything = false;
                 KeepOriginalEmail = false;
                 ArchiveUnsupported = false;
+                AddAttachmentsToPdf = false; // Désactivé en cascade
             }
         }
     }
@@ -90,6 +89,12 @@ public class MainWindowViewModel : ViewModelBase
         get => _includeHeader;
         set => this.RaiseAndSetIfChanged(ref _includeHeader, value);
     }
+    
+    public bool AddAttachmentsToPdf
+    {
+        get => _addAttachmentsToPdf;
+        set => this.RaiseAndSetIfChanged(ref _addAttachmentsToPdf, value);
+    }
 
     public bool OpenFolderAtEnd
     {
@@ -99,4 +104,5 @@ public class MainWindowViewModel : ViewModelBase
 
     public bool IsArchiveSectionEnabled => ExtractAttachments;
     public bool IsArchiveUnsupportedEnabled => ExtractAttachments && !ZipEverything;
+    public bool IsAddAttachmentsToPdfEnabled => ExtractAttachments;
 }
