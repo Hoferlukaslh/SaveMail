@@ -4,24 +4,30 @@
              xmlns:local="using:SaveMail"
              xmlns:System="clr-namespace:System;assembly=mscorlib"
              RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+    <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
     <Application.DataTemplates>
-        <local:ViewLocator/>
+        <local:ViewLocator />
     </Application.DataTemplates>
-  
+
     <Application.Styles>
-        <FluentTheme />
+        <FluentTheme>
+            <FluentTheme.Palettes>
+                <ColorPaletteResources x:Key="Light" Accent="#3b82f6" />
+
+                <ColorPaletteResources x:Key="Dark" Accent="#3b82f6" />
+            </FluentTheme.Palettes>
+        </FluentTheme>
     </Application.Styles>
-             
+
     <Application.Resources>
         <ResourceDictionary>
 
             <!-- Police d'écriture -->
-            <FontFamily x:Key="Helvetica">avares://ScholarLog/Assets/Fonts/Helvetica/Helvetica.ttf#Helvetica</FontFamily>
-            <FontFamily x:Key="Phosphor">avares://ScholarLog/Assets/Fonts/Phosphor/Phosphor.ttf#Phosphor</FontFamily>
-            <!--<FontFamily x:Key="PhosphorDuotone">avares://ScholarLog/Assets/Fonts/Phosphor/Phosphor-Duotone.ttf#Phosphor</FontFamily> -->
-            <!--<FontFamily x:Key="HelveticaBold">avares://ScholarLog/Assets/Fonts/Helvetica/Helvetica-Bold.ttf#Helvetica</FontFamily>-->
+            <FontFamily x:Key="Helvetica">avares://SaveMail/Assets/Fonts/Helvetica/Helvetica.ttf#Helvetica</FontFamily>
+            <FontFamily x:Key="Phosphor">avares://SaveMail/Assets/Fonts/Phosphor/Phosphor.ttf#Phosphor</FontFamily>
+            <!--<FontFamily x:Key="PhosphorDuotone">avares://SaveMail/Assets/Fonts/Phosphor/Phosphor-Duotone.ttf#Phosphor</FontFamily> -->
+            <!--<FontFamily x:Key="HelveticaBold">avares://SaveMail/Assets/Fonts/Helvetica/Helvetica-Bold.ttf#Helvetica</FontFamily>-->
 
             <!-- Taille des textes -->
             <System:Double x:Key="FontSizeLarge">22</System:Double>
@@ -57,6 +63,7 @@
             <x:String x:Key="IconeExportFile">&#xE232;</x:String>
             <x:String x:Key="IconeMail">&#xE218;</x:String>
             <x:String x:Key="IconeCheckCircle">&#xE184;</x:String>
+            <x:String x:Key="IconeInfo">&#xE2CE;</x:String>
 
 
             <!-- Ressources en fonction du thème de l'appareil -->
@@ -64,29 +71,81 @@
 
                 <!-- Thème sombre -->
                 <ResourceDictionary x:Key="Dark">
-                    <!-- Pas de thème sombre prévu pour l'instant -->
+                    <SolidColorBrush x:Key="PrimaryBackground">#0f172a</SolidColorBrush>
+                    <SolidColorBrush x:Key="PrimaryBackgroundSolid">#1e293b</SolidColorBrush>
+                    <SolidColorBrush x:Key="DropForeground">#172554</SolidColorBrush>
+                    <SolidColorBrush x:Key="DropTirets">#3b82f6</SolidColorBrush>
+                    <SolidColorBrush x:Key="MailIconeBackground">#312e81</SolidColorBrush>
+                    <SolidColorBrush x:Key="MailIconeForeground">#818cf8</SolidColorBrush>
+                    <SolidColorBrush x:Key="FieldBackground">#020617</SolidColorBrush>
+                    <SolidColorBrush x:Key="BoutonColorBlue">#3b82f6</SolidColorBrush>
+                    <SolidColorBrush x:Key="BoutonColorWhite">#334155</SolidColorBrush>
+                    <SolidColorBrush x:Key="BorderColor">#334155</SolidColorBrush>
+
+                    <!-- Status des éléments dans la fil d'attente -->
+                    <SolidColorBrush x:Key="SuccessBackground">#064e3b</SolidColorBrush>
+                    <SolidColorBrush x:Key="ErrorBackground">#450a0a</SolidColorBrush>
+                    <SolidColorBrush x:Key="WarningBackground">#655010</SolidColorBrush>
+
+                    <!-- Pastille MàJ de l'app -->
+                    <SolidColorBrush x:Key="UpdateAvalaible">Orange</SolidColorBrush>
+                    <SolidColorBrush x:Key="UpdateError">Red</SolidColorBrush>
+                    <SolidColorBrush x:Key="Updated">Green</SolidColorBrush>
+
+
+                    <!-- ReSharper disable once Xaml.UnexpectedTextToken -->
+                    <WindowIcon x:Key="AppIcon">/Assets/Images/Logo_blanc_256.ico</WindowIcon>
+                    <Bitmap x:Key="AppLogoImage">/Assets/Images/Logo_blanc_256.ico</Bitmap>
+
+                    <SolidColorBrush x:Key="PrimaryForeground">#60a5fa</SolidColorBrush>
+                    <SolidColorBrush x:Key="SecondaryForeground">#94a3b8</SolidColorBrush>
+                    <SolidColorBrush x:Key="SuccessForeground">#34d399</SolidColorBrush>
+                    <SolidColorBrush x:Key="DisabledFont">#475569</SolidColorBrush>
+                    <SolidColorBrush x:Key="InfoFont">#cbd5e1</SolidColorBrush>
+
+                    <SolidColorBrush x:Key="ColorFontRed">#f87171</SolidColorBrush>
                 </ResourceDictionary>
 
                 <!-- Thème clair -->
                 <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush x:Key="PrimaryBackground">#DDF0F2F8</SolidColorBrush>
-                    <SolidColorBrush x:Key="PrimaryBackgroundSolid">#F0F2F8</SolidColorBrush>
+                    <SolidColorBrush x:Key="PrimaryBackground">#f8fafc</SolidColorBrush>
+                    <SolidColorBrush x:Key="PrimaryBackgroundSolid">#ffffff</SolidColorBrush>
+                    <SolidColorBrush x:Key="DropForeground">#e4efff</SolidColorBrush>
+                    <SolidColorBrush x:Key="DropTirets">#b2d5fd</SolidColorBrush>
+                    <SolidColorBrush x:Key="MailIconeBackground">#e0e7ff</SolidColorBrush>
+                    <SolidColorBrush x:Key="MailIconeForeground">#6059e8</SolidColorBrush>
+                    <SolidColorBrush x:Key="FieldBackground">#f8fafc</SolidColorBrush>
+                    <SolidColorBrush x:Key="BoutonColorBlue">#2563eb</SolidColorBrush>
+                    <SolidColorBrush x:Key="BoutonColorWhite">#afbbca</SolidColorBrush>
+                    <SolidColorBrush x:Key="BorderColor">#cbd5e1</SolidColorBrush>
 
-                    <LinearGradientBrush x:Key="PrimaryBackgroundGradient" StartPoint="0%, 0%" EndPoint="100%, 0%">
-                        <GradientStop Offset="0" Color="#CCDDE1F0"></GradientStop>
-                        <GradientStop Offset="1" Color="#CCFFFFFF"></GradientStop>
-                    </LinearGradientBrush>
+                    <!-- Status des éléments dans la fil d'attente -->
+                    <SolidColorBrush x:Key="SuccessBackground">#f0fdf4</SolidColorBrush>
+                    <SolidColorBrush x:Key="ErrorBackground">#fef2f2</SolidColorBrush>
+                    <SolidColorBrush x:Key="WarningBackground">#fef9c3</SolidColorBrush>
+
+                    <!-- Pastille MàJ de l'app -->
+                    <SolidColorBrush x:Key="UpdateAvalaible">Orange</SolidColorBrush>
+                    <SolidColorBrush x:Key="UpdateError">Red</SolidColorBrush>
+                    <SolidColorBrush x:Key="Updated">Green</SolidColorBrush>
 
                     <!-- ReSharper disable once Xaml.UnexpectedTextToken -->
-                    <WindowIcon x:Key="AppIcon">/Assets/Images/Logo_256.ico</WindowIcon>
+                    <WindowIcon x:Key="AppIcon">/Assets/Images/Logo_blanc_256.ico</WindowIcon>
+                    <Bitmap x:Key="AppLogoImage">/Assets/Images/Logo_blanc_256.ico</Bitmap>
 
                     <!-- Couleur du texte -->
-                    <SolidColorBrush x:Key="PrimaryForeground">#1C1E26</SolidColorBrush>
-                    <SolidColorBrush x:Key="SecondaryForeground">#6E7681</SolidColorBrush>
+                    <SolidColorBrush x:Key="PrimaryForeground">#2563eb</SolidColorBrush>
+                    <SolidColorBrush x:Key="SecondaryForeground">#64748b</SolidColorBrush>
+                    <SolidColorBrush x:Key="SuccessForeground">#10b981</SolidColorBrush>
+                    <SolidColorBrush x:Key="DisabledFont">#99a0aa</SolidColorBrush>
+                    <SolidColorBrush x:Key="InfoFont">#afbbca</SolidColorBrush>
+
+                    <SolidColorBrush x:Key="ColorFontRed">#ef4646</SolidColorBrush>
+
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Application.Resources>
-             
-             
+
+
 </Application>
