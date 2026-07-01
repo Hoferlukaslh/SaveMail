@@ -6,7 +6,7 @@
         mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
         x:Class="SaveMail.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="{StaticResource AppIcon}"
+        Icon="{DynamicResource AppIcon}"
         Title="SaveMail"
         FontFamily="{StaticResource Helvetica}"
         Background="{DynamicResource PrimaryBackground}"
@@ -173,6 +173,13 @@
             </Grid>
 
            <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+               <ScrollViewer.OpacityMask>
+                   <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                       <GradientStop Offset="0" Color="White"/>
+                       <GradientStop Offset="0.95" Color="White"/>
+                       <GradientStop Offset="1" Color="Transparent"/>
+                   </LinearGradientBrush>
+               </ScrollViewer.OpacityMask>
                <ItemsControl x:Name="QueueItemsControl" ItemsSource="{Binding FilesQueue}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -283,6 +290,11 @@
                 </ItemsControl>
             </ScrollViewer>
         </Grid>
+        
+        <Button Grid.Column="0" Classes="ClearBtn" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="-5, 0, 0, 0" Click="BtnInfo_Click" Cursor="help" ZIndex="10">
+            <TextBlock Text="{StaticResource IconeInfo}" FontFamily="{StaticResource Phosphor}" 
+                       Foreground="{DynamicResource SecondaryForeground}" FontSize="{StaticResource IconSizeMedium}" Opacity="0.5"/>
+        </Button>
 
         <Border Grid.Column="1" Background="{DynamicResource PrimaryBackgroundSolid}" 
                 BorderBrush="{DynamicResource BorderColor}" BorderThickness="1,0,0,0">
@@ -355,28 +367,88 @@
                 </ScrollViewer>
 
                 <Border Grid.Row="1" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,1,0,0" Padding="30">
-                    <StackPanel>
-                        <Button Background="{DynamicResource BoutonColorBlue}" Foreground="White" 
-                                CornerRadius="{DynamicResource ControlCornerRadius}" Padding="15" 
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="BtnProcess_Click"
-                                IsEnabled="{Binding HasPendingFiles}"> <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                                <TextBlock Text="{StaticResource IconeExportFile}" FontFamily="{StaticResource Phosphor}" 
-                                           FontSize="{StaticResource IconSizeSmall}" VerticalAlignment="Center"/>
-                                <StackPanel Orientation="Horizontal" Spacing="5">
-                                    <TextBlock Text="Convertir (" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding PendingCount}" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}" VerticalAlignment="Center"/> <TextBlock Text=")" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}" VerticalAlignment="Center"/>
+                    <Grid>
+                        <StackPanel>
+                            <Button Background="{DynamicResource BoutonColorBlue}" Foreground="White" 
+                                    CornerRadius="{DynamicResource ControlCornerRadius}" Padding="15" 
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="BtnProcess_Click"
+                                    IsEnabled="{Binding HasPendingFiles}"> 
+                                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                                    <TextBlock Text="{StaticResource IconeExportFile}" FontFamily="{StaticResource Phosphor}" 
+                                               FontSize="{StaticResource IconSizeSmall}" VerticalAlignment="Center"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <TextBlock Text="Convertir (" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding PendingCount}" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}" VerticalAlignment="Center"/> 
+                                        <TextBlock Text=")" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}" VerticalAlignment="Center"/>
+                                    </StackPanel>
                                 </StackPanel>
+                            </Button>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0" Spacing="5">
+                                <TextBlock Text="{StaticResource IconeCheckCircle}" FontFamily="{StaticResource Phosphor}" 
+                                           Foreground="{DynamicResource InfoFont}" Background="Transparent" VerticalAlignment="Center"/>
+                                <TextBlock Text="Traitement 100% local" Foreground="{DynamicResource InfoFont}" 
+                                           FontSize="{StaticResource FontSizeSmall}" VerticalAlignment="Center"/>
                             </StackPanel>
-                        </Button>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0" Spacing="5">
-                            <TextBlock Text="{StaticResource IconeCheckCircle}" FontFamily="{StaticResource Phosphor}" 
-                                       Foreground="{DynamicResource InfoFont}" Background="Transparent" VerticalAlignment="Center"/>
-                            <TextBlock Text="Traitement 100% local" Foreground="{DynamicResource InfoFont}" 
-                                       FontSize="{StaticResource FontSizeSmall}" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </StackPanel>
+                    </Grid>
                 </Border>
             </Grid>
         </Border>
+        
+        <Grid Grid.Column="0" Grid.ColumnSpan="2" Background="#A0000000" IsVisible="{Binding IsInfoModalOpen}" ZIndex="100">
+            <Border Background="{DynamicResource PrimaryBackgroundSolid}"
+                    BorderBrush="{DynamicResource BorderColor}"
+                    BorderThickness="1"
+                    CornerRadius="{DynamicResource CardCornerRadius}"
+                    Padding="30"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Width="400"
+                    BoxShadow="0 10 30 0 #40000000">
+                <StackPanel Spacing="15">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <TextBlock Text="À propos de SaveMail" FontWeight="Bold" FontSize="{StaticResource FontSizeLarge}" VerticalAlignment="Center"/>
+                        <Button Grid.Column="1" Classes="ClearBtn" Padding="5" Click="BtnCloseInfo_Click" Cursor="Hand">
+                            <TextBlock Text="{StaticResource IconeClose}" FontFamily="{StaticResource Phosphor}" 
+                                       Foreground="{DynamicResource ColorFontRed}" FontSize="{StaticResource IconSizeMedium}"/>
+                        </Button>
+                    </Grid>
+                    
+                    <Rectangle Height="1" Fill="{DynamicResource BorderColor}" Margin="0,5,0,10"/>
+                    
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="100, *" Margin="0,0,0,10">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Auteur :" FontWeight="Bold" Foreground="{DynamicResource SecondaryForeground}" Margin="0,8"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="Lukas Hofer" ToolTip.Tip="lukas.hofer.ju@gmail.com" Margin="0,8"/>
+                        
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Version :" FontWeight="Bold" Foreground="{DynamicResource SecondaryForeground}" Margin="0,8"/>
+                        
+                        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,8" Spacing="8">
+                            <TextBlock Text="{Binding AppVersion}" VerticalAlignment="Center"/>
+                            
+                            <Ellipse Width="10" Height="10" Fill="{DynamicResource Updated}" 
+                                     IsVisible="{Binding IsUpToDate}" 
+                                     ToolTip.Tip="{Binding VersionStatus}" VerticalAlignment="Center"/>
+                            
+                            <Ellipse Width="10" Height="10" Fill="{DynamicResource UpdateAvalaible}" 
+                                     IsVisible="{Binding IsNewVersionAvailable}" 
+                                     ToolTip.Tip="{Binding VersionStatus}" 
+                                     Cursor="Hand" PointerPressed="LinkReleases_PointerPressed" VerticalAlignment="Center"/>
+                            
+                            <Ellipse Width="10" Height="10" Fill="{DynamicResource UpdateError}" 
+                                     IsVisible="{Binding IsUpdateError}" 
+                                     ToolTip.Tip="{Binding VersionStatus}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Dépôt :" FontWeight="Bold" Foreground="{DynamicResource SecondaryForeground}" Margin="0,8"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="GitHub - Hoferlukaslh/SaveMail" Foreground="{DynamicResource PrimaryForeground}" 
+                                   TextDecorations="Underline" Cursor="Hand" PointerPressed="LinkRepo_PointerPressed" Margin="0,8"/>
+                        
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Licence :" FontWeight="Bold" Foreground="{DynamicResource SecondaryForeground}" Margin="0,8"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="GPLv3-Only" Foreground="{DynamicResource PrimaryForeground}" 
+                                   TextDecorations="Underline" Cursor="Hand" PointerPressed="LinkLicense_PointerPressed" Margin="0,8"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Window>

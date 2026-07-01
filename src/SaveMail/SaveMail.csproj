@@ -6,7 +6,7 @@
         <UseAvalonia>true</UseAvalonia>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-        <ApplicationIcon>Assets\Images\Logo_256.ico</ApplicationIcon>
+
         <Version>0.1.0</Version>
         <Title>SaveMail</Title>
         <Authors>Lukas Hofer</Authors>
@@ -15,6 +15,7 @@
         <PackageLicenseUrl>https://www.gnu.org/licenses/gpl-3.0.html</PackageLicenseUrl>
         <PackageIcon>Assets\Images\Logo_transparent.png</PackageIcon>
         <RepositoryUrl>https://github.com/hoferlukaslh/SaveMail</RepositoryUrl>
+        <AssemblyVersion></AssemblyVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,7 +25,9 @@
         <AvaloniaResource Include="Assets\Fonts\Phosphor\Phosphor.ttf" /> <!-- icones -->
 
         <!-- Logos -->
-        <AvaloniaResource Include="Assets/Images/*" />
+        <AvaloniaResource Include="Assets\Images\Logo_blanc_256.ico" />
+        <AvaloniaResource Include="Assets\Images\Logo_noir_256.ico" />
+
     </ItemGroup>
 
     <ItemGroup>

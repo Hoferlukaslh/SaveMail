@@ -1,5 +1,9 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading.Tasks;
 using ReactiveUI;
 using SaveMail.Models;
 
@@ -15,6 +19,28 @@ public class MainWindowViewModel : ViewModelBase
     private bool _addAttachmentsToPdf = true;
     private bool _openFolderAtEnd = true;
     private string _outputDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
+    private bool _isInfoModalOpen = false;
+    
+    private string _versionStatus = "Vérification...";
+    private bool _isNewVersionAvailable = false;
+    private bool _hasCheckedUpdate = false;
+    
+    private bool _isUpToDate = false;
+    private bool _isUpdateError = false;
+
+    public bool IsUpToDate
+    {
+        get => _isUpToDate;
+        set => this.RaiseAndSetIfChanged(ref _isUpToDate, value);
+    }
+
+    public bool IsUpdateError
+    {
+        get => _isUpdateError;
+        set => this.RaiseAndSetIfChanged(ref _isUpdateError, value);
+    }
+    
+
     
     public int QueueCount => FilesQueue.Count;
     public int PendingCount => FilesQueue.Count(f => !f.IsCompleted);
@@ -105,4 +131,120 @@ public class MainWindowViewModel : ViewModelBase
     public bool IsArchiveSectionEnabled => ExtractAttachments;
     public bool IsArchiveUnsupportedEnabled => ExtractAttachments && !ZipEverything;
     public bool IsAddAttachmentsToPdfEnabled => ExtractAttachments;
+    
+    public string AppVersion 
+    {
+        get 
+        {
+            var v = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            return v != null ? $"{v.Major}.{v.Minor}.{v.Build}" : "x.x.x";
+        }
+    }
+    
+    public string VersionStatus
+    {
+        get => _versionStatus;
+        set => this.RaiseAndSetIfChanged(ref _versionStatus, value);
+    }
+
+    public bool IsNewVersionAvailable
+    {
+        get => _isNewVersionAvailable;
+        set => this.RaiseAndSetIfChanged(ref _isNewVersionAvailable, value);
+    }
+
+    public bool IsInfoModalOpen
+    {
+        get => _isInfoModalOpen;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _isInfoModalOpen, value);
+            // Déclenche la vérification une seule fois à l'ouverture du modal
+            if (value && !_hasCheckedUpdate)
+            {
+                _hasCheckedUpdate = true;
+                Task.Run(() => CheckForUpdatesAsync());
+            }
+        }
+    }
+
+    private async Task CheckForUpdatesAsync()
+    {
+        // État neutre pendant le chargement
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            IsUpToDate = false;
+            IsNewVersionAvailable = false;
+            IsUpdateError = false;
+            VersionStatus = "Vérification en cours...";
+        });
+
+        try
+        {
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("SaveMail-App");
+
+            var response = await client.GetAsync("https://api.github.com/repos/Hoferlukaslh/SaveMail/releases/latest");
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                        VersionStatus = "Aucune version publiée en ligne";
+                    else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                        VersionStatus = "Limite d'API GitHub atteinte";
+                    else
+                        VersionStatus = $"Erreur serveur ({response.StatusCode})";
+                    
+                    IsUpdateError = true; // Active la pastille rouge
+                });
+                return;
+            }
+
+            var jsonString = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(jsonString);
+            
+            if (doc.RootElement.TryGetProperty("tag_name", out var tagProperty))
+            {
+                string tag = tagProperty.GetString() ?? "";
+                string cleanTag = tag.TrimStart('v', 'V');
+
+                var localVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                
+                if (Version.TryParse(cleanTag, out var remoteVersion) && localVersion != null)
+                {
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        if (remoteVersion > localVersion)
+                        {
+                            VersionStatus = $"Mise à jour disponible ({tag}) - Cliquez ici";
+                            IsNewVersionAvailable = true; // Active la pastille jaune
+                        }
+                        else
+                        {
+                            VersionStatus = "Application à jour";
+                            IsUpToDate = true; // Active la pastille verte
+                        }
+                    });
+                }
+                else
+                {
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        VersionStatus = $"Format de version non reconnu ({tag})";
+                        IsUpdateError = true;
+                    });
+                }
+            }
+        }
+        catch (Exception)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                VersionStatus = "Hors ligne ou erreur réseau";
+                IsUpdateError = true; // Active la pastille rouge
+            });
+        }
+    }
 }

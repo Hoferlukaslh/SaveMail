@@ -366,4 +366,45 @@ public partial class MainWindow : Window
             });
         }
     }
+    
+    private void BtnInfo_Click(object? sender, RoutedEventArgs e)
+    {
+        if (ViewModel != null) ViewModel.IsInfoModalOpen = true;
+    }
+
+    private void BtnCloseInfo_Click(object? sender, RoutedEventArgs e)
+    {
+        if (ViewModel != null) ViewModel.IsInfoModalOpen = false;
+    }
+
+    private void LinkRepo_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        OuvrirLienWeb("https://github.com/Hoferlukaslh/SaveMail/");
+    }
+
+    private void LinkLicense_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        OuvrirLienWeb("https://www.gnu.org/licenses/gpl-3.0.html");
+    }
+
+    private void OuvrirLienWeb(string url)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true // Requis sur .NET Core/.NET 5+ pour ouvrir une URL
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Impossible d'ouvrir le lien : {ex.Message}");
+        }
+    }
+    
+    private void LinkReleases_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        OuvrirLienWeb("https://github.com/Hoferlukaslh/SaveMail/releases");
+    }
 }

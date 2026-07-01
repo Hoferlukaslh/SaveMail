@@ -11,7 +11,13 @@
     </Application.DataTemplates>
   
     <Application.Styles>
-        <FluentTheme />
+        <FluentTheme>
+            <FluentTheme.Palettes>
+                <ColorPaletteResources x:Key="Light" Accent="#3b82f6" />
+                
+                <ColorPaletteResources x:Key="Dark" Accent="#3b82f6" />
+            </FluentTheme.Palettes>
+        </FluentTheme>
     </Application.Styles>
              
     <Application.Resources>
@@ -57,6 +63,7 @@
             <x:String x:Key="IconeExportFile">&#xE232;</x:String>
             <x:String x:Key="IconeMail">&#xE218;</x:String>
             <x:String x:Key="IconeCheckCircle">&#xE184;</x:String>
+            <x:String x:Key="IconeInfo">&#xE2CE;</x:String>
 
 
             <!-- Ressources en fonction du thème de l'appareil -->
@@ -75,13 +82,20 @@
                     <SolidColorBrush x:Key="BoutonColorWhite">#334155</SolidColorBrush>
                     <SolidColorBrush x:Key="BorderColor">#334155</SolidColorBrush>
                     
+                    <!-- Status des éléments dans la fil d'attente -->
                     <SolidColorBrush x:Key="SuccessBackground">#064e3b</SolidColorBrush> 
                     <SolidColorBrush x:Key="ErrorBackground">#450a0a</SolidColorBrush> 
                     <SolidColorBrush x:Key="WarningBackground">#655010</SolidColorBrush>
                     
+                    <!-- Pastille MàJ de l'app -->
+                    <SolidColorBrush x:Key="UpdateAvalaible">Orange</SolidColorBrush>
+                    <SolidColorBrush x:Key="UpdateError">Red</SolidColorBrush>
+                    <SolidColorBrush x:Key="Updated">Green</SolidColorBrush>
+                    
 
                     <!-- ReSharper disable once Xaml.UnexpectedTextToken -->
-                    <WindowIcon x:Key="AppIcon">/Assets/Images/Logo_256.ico</WindowIcon>
+                    <WindowIcon x:Key="AppIcon">/Assets/Images/Logo_blanc_256.ico</WindowIcon>
+                    <Bitmap x:Key="AppLogoImage">/Assets/Images/Logo_blanc_256.ico</Bitmap>
 
                     <SolidColorBrush x:Key="PrimaryForeground">#60a5fa</SolidColorBrush>
                     <SolidColorBrush x:Key="SecondaryForeground">#94a3b8</SolidColorBrush>
@@ -105,12 +119,19 @@
                     <SolidColorBrush x:Key="BoutonColorWhite">#afbbca</SolidColorBrush>
                     <SolidColorBrush x:Key="BorderColor">#cbd5e1</SolidColorBrush>
                     
+                    <!-- Status des éléments dans la fil d'attente -->
                     <SolidColorBrush x:Key="SuccessBackground">#f0fdf4</SolidColorBrush>
                     <SolidColorBrush x:Key="ErrorBackground">#fef2f2</SolidColorBrush>
                     <SolidColorBrush x:Key="WarningBackground">#fef9c3</SolidColorBrush>
+                    
+                    <!-- Pastille MàJ de l'app -->
+                    <SolidColorBrush x:Key="UpdateAvalaible">Orange</SolidColorBrush>
+                    <SolidColorBrush x:Key="UpdateError">Red</SolidColorBrush>
+                    <SolidColorBrush x:Key="Updated">Green</SolidColorBrush>
 
                     <!-- ReSharper disable once Xaml.UnexpectedTextToken -->
-                    <WindowIcon x:Key="AppIcon">/Assets/Images/Logo_256.ico</WindowIcon>
+                    <WindowIcon x:Key="AppIcon">/Assets/Images/Logo_noir_256.ico</WindowIcon>
+                    <Bitmap x:Key="AppLogoImage">/Assets/Images/Logo_noir_256.ico</Bitmap>
 
                     <!-- Couleur du texte -->
                     <SolidColorBrush x:Key="PrimaryForeground">#2563eb</SolidColorBrush>
