@@ -3,10 +3,10 @@
 ; 01.07.2026
 
 #define MyAppName "SaveMail Converter"
-#define MyAppVersion "0.1.0"
+#define MyAppVersion "0.1.1"
 #define MyAppPublisher "Lukas"
 #define MyAppURL "https://github.com/Hoferlukaslh/SaveMail"
-#define MyAppExeName "SaveMail_v0.1.0_Win_x64.exe"
+#define MyAppExeName "SaveMail_v0.1.1_Win_x64.exe"
 #define SetupLogo "..\SaveMail\Assets\Images\Logo_blanc_256.ico"
 #define BuildPath "Executable"
 #define LicensePath "..\..\LICENSE"
@@ -32,7 +32,7 @@ PrivilegesRequiredOverridesAllowed=dialog
 
 ; Emplacement de sortie et nom de l'installateur
 OutputDir=Installeur
-OutputBaseFilename=SaveMail_Installer_WIN_x64
+OutputBaseFilename=SaveMail_v{#MyAppVersion}_Installer_WIN_x64
 SolidCompression=yes
 WizardStyle=modern windows11
 
