@@ -1,29 +1,27 @@
+using System.Text;
 using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes; 
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using SaveMail.ViewModels;
 using SaveMail.Views;
 
-
 namespace SaveMail;
 
-public partial class App : Application
+public class App : Application
 {
     public override void Initialize()
     {
-        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         AvaloniaXamlLoader.Load(this);
     }
 
     public override void OnFrameworkInitializationCompleted()
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainWindowViewModel(),
+                DataContext = new MainWindowViewModel()
             };
-        }
 
         base.OnFrameworkInitializationCompleted();
     }

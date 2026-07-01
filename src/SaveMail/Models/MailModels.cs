@@ -7,57 +7,62 @@ namespace SaveMail.Models;
 
 public class FichierMail : ReactiveObject
 {
+    private bool _hasError;
+
+    private bool _hasWarning;
+
+    private bool _isCompleted;
+
+    private bool _isProcessing;
+
+    private double _progress;
+
+    private string _statusText = "En attente";
     public string Path { get; set; } = string.Empty;
     public string Name => System.IO.Path.GetFileName(Path);
     public string Extension => System.IO.Path.GetExtension(Path);
-    
-    private bool _hasError;
+
     public bool HasError
     {
         get => _hasError;
         set => this.RaiseAndSetIfChanged(ref _hasError, value);
     }
-    
-    private bool _hasWarning;
+
     public bool HasWarning
     {
         get => _hasWarning;
-        set => this.RaiseAndSetIfChanged(ref _hasWarning, value); // Ou la méthode de notification utilisée par votre modèle
+        set => this.RaiseAndSetIfChanged(ref _hasWarning, value);
     }
-    
+
     public string Size
     {
         get
         {
             if (!File.Exists(Path)) return "Inconnu";
-            long length = new FileInfo(Path).Length;
+            var length = new FileInfo(Path).Length;
             if (length >= 1048576) return $"{length / 1048576.0:F1} MB";
             return $"{length / 1024.0:F1} KB";
         }
     }
 
-    private double _progress;
     public double Progress
     {
         get => _progress;
         set => this.RaiseAndSetIfChanged(ref _progress, value);
     }
 
-    private string _statusText = "En attente";
     public string StatusText
     {
         get => _statusText;
         set => this.RaiseAndSetIfChanged(ref _statusText, value);
     }
 
-    private bool _isProcessing;
     public bool IsProcessing
     {
         get => _isProcessing;
         set => this.RaiseAndSetIfChanged(ref _isProcessing, value);
     }
 
-    private bool _isCompleted;
     public bool IsCompleted
     {
         get => _isCompleted;

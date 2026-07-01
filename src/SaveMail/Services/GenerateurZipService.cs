@@ -9,10 +9,11 @@ public class GenerateurZipService
 {
     public string? CreerArchive(DonneesMail donnees, string cheminSortiePdf)
     {
-        var piecesAZipper = donnees.PiecesJointes.Where(pj => pj.Compatibilite == CompatibilitePdf.ExtraireDansZip).ToList();
+        var piecesAZipper = donnees.PiecesJointes.Where(pj => pj.Compatibilite == CompatibilitePdf.ExtraireDansZip)
+            .ToList();
         if (!piecesAZipper.Any()) return null;
 
-        string cheminZip = Path.ChangeExtension(cheminSortiePdf, ".zip");
+        var cheminZip = Path.ChangeExtension(cheminSortiePdf, ".zip");
 
         using (var fileStream = new FileStream(cheminZip, FileMode.Create))
         using (var archive = new ZipArchive(fileStream, ZipArchiveMode.Create, true))
@@ -24,39 +25,37 @@ public class GenerateurZipService
                 entryStream.Write(pj.Contenu, 0, pj.Contenu.Length);
             }
         }
+
         return cheminZip;
     }
-    
-    public string CreerArchiveComplete(DonneesMail donnees, string cheminFichierOriginal, string cheminPdf, bool keepOriginalEmail)
+
+    public string CreerArchiveComplete(DonneesMail donnees, string cheminFichierOriginal, string cheminPdf,
+        bool keepOriginalEmail)
     {
-        string nomBase = Path.GetFileNameWithoutExtension(cheminPdf);
-        string cheminDossier = Path.GetDirectoryName(cheminPdf) ?? string.Empty;
-        string cheminZip = Path.Combine(cheminDossier, $"{nomBase}_Archive_Complete.zip");
+        var nomBase = Path.GetFileNameWithoutExtension(cheminPdf);
+        var cheminDossier = Path.GetDirectoryName(cheminPdf) ?? string.Empty;
+        var cheminZip = Path.Combine(cheminDossier, $"{nomBase}_Archive_Complete.zip");
 
         using (var fileStream = new FileStream(cheminZip, FileMode.Create))
         using (var archive = new ZipArchive(fileStream, ZipArchiveMode.Create, true))
         {
             // ajoute l'email d'origine uniquement si demandé
             if (keepOriginalEmail && File.Exists(cheminFichierOriginal))
-            {
-                archive.CreateEntryFromFile(cheminFichierOriginal, Path.GetFileName(cheminFichierOriginal), CompressionLevel.Optimal);
-            }
+                archive.CreateEntryFromFile(cheminFichierOriginal, Path.GetFileName(cheminFichierOriginal),
+                    CompressionLevel.Optimal);
 
             if (File.Exists(cheminPdf))
-            {
                 archive.CreateEntryFromFile(cheminPdf, Path.GetFileName(cheminPdf), CompressionLevel.Optimal);
-            }
 
             if (donnees.PiecesJointes.Any())
-            {
                 foreach (var pj in donnees.PiecesJointes)
                 {
                     var entry = archive.CreateEntry($"Pieces_Jointes/{pj.NomFichier}", CompressionLevel.Optimal);
                     using var entryStream = entry.Open();
                     entryStream.Write(pj.Contenu, 0, pj.Contenu.Length);
                 }
-            }
         }
+
         return cheminZip;
     }
 }

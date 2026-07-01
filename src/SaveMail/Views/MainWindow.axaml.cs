@@ -4,11 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
-using Avalonia.VisualTree;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Avalonia.VisualTree;
 using SaveMail.Models;
 using SaveMail.Services;
 using SaveMail.ViewModels;
@@ -17,40 +17,34 @@ namespace SaveMail.Views;
 
 public partial class MainWindow : Window
 {
-    private Border? FindParentBorderWithClass(Visual? element, string className)
-    {
-        while (element != null)
-        {
-            if (element is Border border && border.Classes.Contains(className))
-            {
-                return border;
-            }
-            element = element.GetVisualParent();
-        }
-        return null;
-    }
-    
+    private bool _isProcessingLoopActive; // Sécurité pour empêcher les doublons
+
     public MainWindow()
     {
         InitializeComponent();
         DataContext = new MainWindowViewModel();
     }
-    
+
+    private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
+
+    private Border? FindParentBorderWithClass(Visual? element, string className)
+    {
+        while (element != null)
+        {
+            if (element is Border border && border.Classes.Contains(className)) return border;
+            element = element.GetVisualParent();
+        }
+
+        return null;
+    }
+
     private void DropZone_DragOver(object? sender, DragEventArgs e)
     {
-        // Indique au système d'exploitation que la zone accepte les fichiers (nouvelle API)
-        if (e.DataTransfer.Formats.Contains(DataFormat.File))
-        {
-            e.DragEffects = DragDropEffects.Copy;
-        }
-        else
-        {
-        }
+        if (e.DataTransfer.Formats.Contains(DataFormat.File)) e.DragEffects = DragDropEffects.Copy;
     }
-    
+
     private void DropZone_DragEnter(object? sender, DragEventArgs e)
     {
-        // Si ce qu'on fait glisser contient bien des fichiers, on active l'animation
         if (e.DataTransfer.Formats.Contains(DataFormat.File))
         {
             DropZoneBorder.Classes.Add("drag-active");
@@ -60,7 +54,6 @@ public partial class MainWindow : Window
 
     private void DropZone_DragLeave(object? sender, DragEventArgs e)
     {
-        // On retire l'animation quand le fichier sort de la zone
         DropZoneBorder.Classes.Remove("drag-active");
     }
 
@@ -74,73 +67,82 @@ public partial class MainWindow : Window
             var files = e.DataTransfer.TryGetFiles();
             if (files == null) return;
 
-            int delayCount = 0; // Compteur pour limiter l'effet visuel aux 15 premiers fichiers
+            var delayCount = 0;
 
             foreach (var file in files)
             {
-                string path = file.Path.LocalPath;
+                var path = file.Path.LocalPath;
 
-                if (path.EndsWith(".eml", StringComparison.OrdinalIgnoreCase) || 
+                if (path.EndsWith(".eml", StringComparison.OrdinalIgnoreCase) ||
                     path.EndsWith(".msg", StringComparison.OrdinalIgnoreCase))
                 {
                     ViewModel.FilesQueue.Add(new FichierMail { Path = path });
-                    ViewModel.RefreshQueue(); // Met à jour le compteur texte en direct
-                
-                    // Petit délai de 40ms pour l'effet cascade
-                    if (delayCount < 15) { await Task.Delay(40); delayCount++; }
+                    ViewModel.RefreshQueue();
+
+                    if (delayCount < 15)
+                    {
+                        await Task.Delay(40);
+                        delayCount++;
+                    }
                 }
                 else if (Directory.Exists(path))
                 {
                     var dirFiles = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories)
-                        .Where(s => s.EndsWith(".eml", StringComparison.OrdinalIgnoreCase) || 
+                        .Where(s => s.EndsWith(".eml", StringComparison.OrdinalIgnoreCase) ||
                                     s.EndsWith(".msg", StringComparison.OrdinalIgnoreCase));
-                
+
                     foreach (var f in dirFiles)
                     {
                         ViewModel.FilesQueue.Add(new FichierMail { Path = f });
                         ViewModel.RefreshQueue();
-                    
-                        if (delayCount < 15) { await Task.Delay(40); delayCount++; }
+
+                        if (delayCount < 15)
+                        {
+                            await Task.Delay(40);
+                            delayCount++;
+                        }
                     }
                 }
             }
         }
     }
-    
-    private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 
     private async void BtnAddFiles_Click(object? sender, RoutedEventArgs e)
     {
         if (ViewModel == null) return;
-    
-        var topLevel = TopLevel.GetTopLevel(this);
+
+        var topLevel = GetTopLevel(this);
         if (topLevel == null) return;
 
         var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             Title = "Sélectionner des emails",
             AllowMultiple = true,
-            FileTypeFilter = new[] 
-            { 
-                new FilePickerFileType("Emails") { Patterns = new[] { "*.eml", "*.msg" } } 
+            FileTypeFilter = new[]
+            {
+                new FilePickerFileType("Emails") { Patterns = new[] { "*.eml", "*.msg" } }
             }
         });
 
-        int delayCount = 0;
+        var delayCount = 0;
         foreach (var file in files)
         {
             ViewModel.FilesQueue.Add(new FichierMail { Path = file.Path.LocalPath });
             ViewModel.RefreshQueue();
-        
-            if (delayCount < 15) { await Task.Delay(40); delayCount++; }
+
+            if (delayCount < 15)
+            {
+                await Task.Delay(40);
+                delayCount++;
+            }
         }
     }
 
     private async void BtnAddFolder_Click(object? sender, RoutedEventArgs e)
     {
         if (ViewModel == null) return;
-    
-        var topLevel = TopLevel.GetTopLevel(this);
+
+        var topLevel = GetTopLevel(this);
         if (topLevel == null) return;
 
         var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
@@ -153,39 +155,38 @@ public partial class MainWindow : Window
         {
             var path = folders.First().Path.LocalPath;
             var files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories)
-                .Where(s => s.EndsWith(".eml", StringComparison.OrdinalIgnoreCase) || 
+                .Where(s => s.EndsWith(".eml", StringComparison.OrdinalIgnoreCase) ||
                             s.EndsWith(".msg", StringComparison.OrdinalIgnoreCase));
-        
-            int delayCount = 0;
+
+            var delayCount = 0;
             foreach (var file in files)
             {
                 ViewModel.FilesQueue.Add(new FichierMail { Path = file });
                 ViewModel.RefreshQueue();
-            
-                if (delayCount < 15) { await Task.Delay(40); delayCount++; }
+
+                if (delayCount < 15)
+                {
+                    await Task.Delay(40);
+                    delayCount++;
+                }
             }
         }
     }
-    
+
     private async void BtnRemoveItem_Click(object? sender, RoutedEventArgs e)
     {
         if (ViewModel == null) return;
-        
+
         if (sender is Button btn && btn.DataContext is FichierMail file)
         {
-            // 1. Trouver l'élément visuel correspondant (la bordure)
             var border = FindParentBorderWithClass(btn, "queue-item");
-            
+
             if (border != null)
             {
-                // 2. Ajouter la classe pour déclencher l'animation de sortie
                 border.Classes.Add("removing");
-                
-                // 3. Attendre la durée de l'animation (0.3s)
                 await Task.Delay(300);
             }
 
-            // 4. Supprimer réellement l'élément
             ViewModel.FilesQueue.Remove(file);
             ViewModel.RefreshQueue();
         }
@@ -195,18 +196,16 @@ public partial class MainWindow : Window
     {
         if (ViewModel == null || !ViewModel.HasFiles) return;
 
-        // 1. Récupérer l'ItemsControl visuel
         var itemsControl = this.FindControl<ItemsControl>("QueueItemsControl");
-        
+
         if (itemsControl != null)
         {
-            int delayCount = 0;
+            var delayCount = 0;
 
-            // 2. Parcourir tous les éléments et déclencher les animations en cascade
-            for (int i = 0; i < ViewModel.FilesQueue.Count; i++)
+            for (var i = 0; i < ViewModel.FilesQueue.Count; i++)
             {
                 var container = itemsControl.ContainerFromIndex(i);
-                
+
                 if (container is Visual visualContainer)
                 {
                     var border = visualContainer.GetVisualDescendants()
@@ -216,18 +215,19 @@ public partial class MainWindow : Window
                     if (border != null)
                     {
                         border.Classes.Add("removing");
-                        
-                        // On reproduit l'effet cascade différé que vous avez déjà à l'ajout
-                        if (delayCount < 15) { await Task.Delay(40); delayCount++; }
+
+                        if (delayCount < 15)
+                        {
+                            await Task.Delay(40);
+                            delayCount++;
+                        }
                     }
                 }
             }
-            
-            // 3. Attendre que la dernière animation en cours se termine
-            await Task.Delay(300); 
+
+            await Task.Delay(300);
         }
 
-        // 4. Vider les données une fois que tout a disparu de l'écran
         ViewModel.FilesQueue.Clear();
         ViewModel.RefreshQueue();
     }
@@ -235,8 +235,8 @@ public partial class MainWindow : Window
     private async void BtnSelectOutput_Click(object? sender, RoutedEventArgs e)
     {
         if (ViewModel == null) return;
-        
-        var topLevel = TopLevel.GetTopLevel(this);
+
+        var topLevel = GetTopLevel(this);
         if (topLevel == null) return;
 
         var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
@@ -244,142 +244,162 @@ public partial class MainWindow : Window
             Title = "Dossier de sortie"
         });
 
-        if (folders.Any())
-        {
-            ViewModel.OutputDirectory = folders.First().Path.LocalPath;
-        }
+        if (folders.Any()) ViewModel.OutputDirectory = folders.First().Path.LocalPath;
     }
 
     private async void BtnProcess_Click(object? sender, RoutedEventArgs e)
     {
         if (ViewModel == null || !ViewModel.HasFiles) return;
 
-        var extracteur = new ExtracteurMailService();
-        var fusionPdf = new FusionPdfService();
-        var generateurZip = new GenerateurZipService();
-
-        await using var generateurPdf = new GenerateurPdfHtmlService();
-
-        var filesToProcess = ViewModel.FilesQueue.Where(f => !f.IsCompleted).ToList();
-        if (!filesToProcess.Any()) return;
-
-        // récupère toutes les options du ViewModel sur le thread principal (UI) 
-        // AVANT de lancer les tâches en arrière-plan.
-        bool extractAttachments = ViewModel.ExtractAttachments;
-        bool zipEverything = ViewModel.ZipEverything;
-        bool archiveUnsupported = ViewModel.ArchiveUnsupported;
-        bool keepOriginalEmail = ViewModel.KeepOriginalEmail;
-        bool includeHeader = ViewModel.IncludeHeader;
-        bool addAttachmentsToPdf = ViewModel.AddAttachmentsToPdf;
-        string outputDirectory = ViewModel.OutputDirectory;
-        bool openFolderAtEnd = ViewModel.OpenFolderAtEnd;
-
-        var premierFichier = filesToProcess.First();
-        premierFichier.IsProcessing = true;
-        premierFichier.StatusText = "Initialisation du moteur PDF...";
-        
-        await generateurPdf.InitialiserNavigateurAsync();
-
-        foreach (var fichierMail in filesToProcess)
-{
-    try
-    {
-        fichierMail.HasError = false; 
-        fichierMail.IsCompleted = false;
-        fichierMail.HasWarning = false; // Réinitialisation au début du traitement
-        fichierMail.IsProcessing = true;
-        fichierMail.Progress = 10;
-        fichierMail.StatusText = "Lecture du fichier...";
-
-        string filePath = fichierMail.Path;
-
-        var donnees = await Task.Run(() => extracteur.Extraire(fichierMail));
-        fichierMail.Progress = 40;
-        fichierMail.StatusText = "Génération du PDF...";
-        
-        int piecesIgnorees = 0;
-        
-        if (!extractAttachments)
+        // 1. On vérifie d'ABORD si l'état actuel est déjà sur "Processing"
+        if (ViewModel.ProcessingState == AppProcessingState.Processing)
         {
-            // Si l'interrupteur principal est coupé, TOUTES les pièces sont ignorées
-            piecesIgnorees = donnees.PiecesJointes.Count;
-        }
-        else if (!zipEverything) 
-        {
-            // Si on ne force pas tout dans un ZIP global, on vérifie le sort de chaque fichier
-            piecesIgnorees = donnees.PiecesJointes.Count(pj => 
-                (pj.Compatibilite == CompatibilitePdf.FusionnerDansPdf && !addAttachmentsToPdf) ||
-                (pj.Compatibilite == CompatibilitePdf.ExtraireDansZip && !archiveUnsupported));
+            ViewModel.ProcessingState = AppProcessingState.Paused;
+            return; // On sort pour laisser la boucle s'arrêter
         }
 
-        if (piecesIgnorees > 0)
-        {
-            fichierMail.HasWarning = true;
-        }
+        // 2. Si ce n'est pas le cas, on passe en mode Processing
+        ViewModel.ProcessingState = AppProcessingState.Processing;
 
-        string pdfPath = await generateurPdf.GenererAsync(donnees, outputDirectory, includeHeader, addAttachmentsToPdf);
-        fichierMail.Progress = 70;
+        // 3. Sécurité pour éviter de lancer plusieurs boucles en même temps
+        if (_isProcessingLoopActive) return;
+        _isProcessingLoopActive = true;
 
-        if (extractAttachments && addAttachmentsToPdf)
+        try
         {
-            fichierMail.StatusText = "Fusion des pièces jointes...";
-            pdfPath = await Task.Run(() => fusionPdf.FusionnerPiecesJointes(pdfPath, donnees.PiecesJointes));
-        }
-        
-        fichierMail.Progress = 85;
+            var extracteur = new ExtracteurMailService();
+            var fusionPdf = new FusionPdfService();
+            var generateurZip = new GenerateurZipService();
 
-        if (zipEverything)
-        {
-            fichierMail.StatusText = "Création de l'archive...";
-            await Task.Run(() => generateurZip.CreerArchiveComplete(donnees, filePath, pdfPath, keepOriginalEmail));
-            
-            if (File.Exists(pdfPath))
+            await using var generateurPdf = new GenerateurPdfHtmlService();
+
+            var filesToProcess = ViewModel.FilesQueue.Where(f => !f.IsCompleted).ToList();
+            if (!filesToProcess.Any()) return;
+
+            var extractAttachments = ViewModel.ExtractAttachments;
+            var zipEverything = ViewModel.ZipEverything;
+            var archiveUnsupported = ViewModel.ArchiveUnsupported;
+            var keepOriginalEmail = ViewModel.KeepOriginalEmail;
+            var includeHeader = ViewModel.IncludeHeader;
+            var addAttachmentsToPdf = ViewModel.AddAttachmentsToPdf;
+            var outputDirectory = ViewModel.OutputDirectory;
+            var openFolderAtEnd = ViewModel.OpenFolderAtEnd;
+
+            var premierFichier = filesToProcess.First();
+            premierFichier.IsProcessing = true;
+            premierFichier.StatusText = "Initialisation du moteur PDF...";
+
+            await generateurPdf.InitialiserNavigateurAsync();
+
+            foreach (var fichierMail in filesToProcess)
             {
-                File.Delete(pdfPath);
+                // Vérification à chaque nouveau fichier : l'utilisateur a-t-il mis en pause ?
+                if (ViewModel.ProcessingState != AppProcessingState.Processing)
+                {
+                    if (fichierMail.IsProcessing && !fichierMail.IsCompleted)
+                    {
+                        fichierMail.IsProcessing = false;
+                        fichierMail.StatusText = "En attente (stoppé)";
+                        fichierMail.Progress = 0;
+                    }
+
+                    break;
+                }
+
+                try
+                {
+                    fichierMail.HasError = false;
+                    fichierMail.IsCompleted = false;
+                    fichierMail.HasWarning = false;
+                    fichierMail.IsProcessing = true;
+                    fichierMail.Progress = 10;
+                    fichierMail.StatusText = "Lecture du fichier...";
+
+                    var filePath = fichierMail.Path;
+
+                    var donnees = await Task.Run(() => extracteur.Extraire(fichierMail));
+                    fichierMail.Progress = 40;
+                    fichierMail.StatusText = "Génération du PDF...";
+
+                    var piecesIgnorees = 0;
+
+                    if (!extractAttachments)
+                        piecesIgnorees = donnees.PiecesJointes.Count;
+                    else if (!zipEverything)
+                        piecesIgnorees = donnees.PiecesJointes.Count(pj =>
+                            (pj.Compatibilite == CompatibilitePdf.FusionnerDansPdf && !addAttachmentsToPdf) ||
+                            (pj.Compatibilite == CompatibilitePdf.ExtraireDansZip && !archiveUnsupported));
+
+                    if (piecesIgnorees > 0) fichierMail.HasWarning = true;
+
+                    var pdfPath = await generateurPdf.GenererAsync(donnees, outputDirectory, includeHeader,
+                        addAttachmentsToPdf);
+                    fichierMail.Progress = 70;
+
+                    if (extractAttachments && addAttachmentsToPdf)
+                    {
+                        fichierMail.StatusText = "Fusion des pièces jointes...";
+                        pdfPath = await Task.Run(() =>
+                            fusionPdf.FusionnerPiecesJointes(pdfPath, donnees.PiecesJointes));
+                    }
+
+                    fichierMail.Progress = 85;
+
+                    if (zipEverything)
+                    {
+                        fichierMail.StatusText = "Création de l'archive...";
+                        await Task.Run(() =>
+                            generateurZip.CreerArchiveComplete(donnees, filePath, pdfPath, keepOriginalEmail));
+
+                        if (File.Exists(pdfPath)) File.Delete(pdfPath);
+                    }
+                    else if (archiveUnsupported && extractAttachments)
+                    {
+                        fichierMail.StatusText = "Archivage des fichiers complexes...";
+                        await Task.Run(() => generateurZip.CreerArchive(donnees, pdfPath));
+                    }
+
+                    fichierMail.Progress = 100;
+                    fichierMail.IsProcessing = false;
+                    fichierMail.IsCompleted = true;
+
+                    if (fichierMail.HasWarning)
+                        fichierMail.StatusText =
+                            $"Terminé (Avertissement : {piecesIgnorees} pièce(s) ignorée(s) avec ces paramètres).";
+                    else
+                        fichierMail.StatusText = "Terminé";
+
+                    ViewModel.RefreshQueue();
+                }
+                catch (Exception ex)
+                {
+                    fichierMail.IsProcessing = false;
+                    fichierMail.IsCompleted = false;
+                    fichierMail.HasError = true;
+                    fichierMail.StatusText = ex.Message.Length > 25 ? "Erreur de conversion" : ex.Message;
+                    Console.WriteLine($"Erreur avec le fichier {fichierMail.Name} : {ex.Message}");
+                }
             }
-        }
-        else if (archiveUnsupported && extractAttachments)
-        {
-            fichierMail.StatusText = "Archivage des fichiers complexes...";
-            await Task.Run(() => generateurZip.CreerArchive(donnees, pdfPath));
-        }
 
-        fichierMail.Progress = 100;
-        fichierMail.IsProcessing = false;
-        fichierMail.IsCompleted = true;
-        
-        if (fichierMail.HasWarning)
-        {
-            fichierMail.StatusText = $"Terminé (Avertissement : {piecesIgnorees} pièce(s) ignorée(s) avec ces paramètres).";
+            // Ouverture du dossier si terminé proprement
+            if (ViewModel.ProcessingState == AppProcessingState.Processing && openFolderAtEnd &&
+                Directory.Exists(outputDirectory))
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = outputDirectory,
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
         }
-        else
+        finally
         {
-            fichierMail.StatusText = "Terminé";
-        }
+            _isProcessingLoopActive = false;
 
-        ViewModel.RefreshQueue();
-    }
-    catch (Exception ex)
-    {
-        fichierMail.IsProcessing = false;
-        fichierMail.IsCompleted = false;
-        fichierMail.HasError = true;
-        fichierMail.StatusText = ex.Message.Length > 25 ? "Erreur de conversion" : ex.Message;
-        Console.WriteLine($"Erreur avec le fichier {fichierMail.Name} : {ex.Message}");
-    }
-}
-
-        if (openFolderAtEnd && Directory.Exists(outputDirectory))
-        {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = outputDirectory,
-                UseShellExecute = true,
-                Verb = "open"
-            });
+            // On repasse à l'état de base si on a tout fini
+            if (ViewModel.ProcessingState == AppProcessingState.Processing) ViewModel.ResetProcessState();
         }
     }
-    
+
     private void BtnInfo_Click(object? sender, RoutedEventArgs e)
     {
         if (ViewModel != null) ViewModel.IsInfoModalOpen = true;
@@ -407,7 +427,7 @@ public partial class MainWindow : Window
             Process.Start(new ProcessStartInfo
             {
                 FileName = url,
-                UseShellExecute = true // Requis sur .NET Core/.NET 5+ pour ouvrir une URL
+                UseShellExecute = true
             });
         }
         catch (Exception ex)
@@ -415,7 +435,7 @@ public partial class MainWindow : Window
             Console.WriteLine($"Impossible d'ouvrir le lien : {ex.Message}");
         }
     }
-    
+
     private void LinkReleases_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         OuvrirLienWeb("https://github.com/Hoferlukaslh/SaveMail/releases");

@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Linq;
 using MimeKit;
 using MsgReader.Outlook;
 using SaveMail.Models;
@@ -8,24 +11,23 @@ public class ExtracteurMailService
 {
     public DonneesMail Extraire(FichierMail fichierMail)
     {
-        if (!System.IO.File.Exists(fichierMail.Path))
-        {
-            throw new System.IO.FileNotFoundException($"Le fichier {fichierMail.Path} est introuvable.");
-        }
+        if (!File.Exists(fichierMail.Path))
+            throw new FileNotFoundException($"Le fichier {fichierMail.Path} est introuvable.");
 
-        string extension = fichierMail.Extension.ToLowerInvariant();
+        var extension = fichierMail.Extension.ToLowerInvariant();
 
         return extension switch
         {
             ".eml" => ExtraireEml(fichierMail.Path),
             ".msg" => ExtraireMsg(fichierMail.Path),
-            _ => throw new System.NotSupportedException($"Le format {extension} n'est pas pris en charge. Veuillez utiliser .eml ou .msg.")
+            _ => throw new NotSupportedException(
+                $"Le format {extension} n'est pas pris en charge. Veuillez utiliser .eml ou .msg.")
         };
     }
 
     private DonneesMail ExtraireEml(string cheminFichier)
     {
-        using var stream = System.IO.File.OpenRead(cheminFichier);
+        using var stream = File.OpenRead(cheminFichier);
         using var mimeMessage = MimeMessage.Load(stream);
 
         var donnees = new DonneesMail();
@@ -33,16 +35,15 @@ public class ExtracteurMailService
         donnees.Header.MessageId = mimeMessage.MessageId ?? string.Empty;
         donnees.Header.Subject = mimeMessage.Subject ?? string.Empty;
         donnees.Header.Date = mimeMessage.Date.DateTime;
-        donnees.Header.From = System.Linq.Enumerable.FirstOrDefault(mimeMessage.From.Mailboxes)?.Address ?? string.Empty;
-        donnees.Header.To = System.Linq.Enumerable.ToList(System.Linq.Enumerable.Select(mimeMessage.To.Mailboxes, m => m.Address));
-        donnees.Header.Cc = System.Linq.Enumerable.ToList(System.Linq.Enumerable.Select(mimeMessage.Cc.Mailboxes, m => m.Address));
+        donnees.Header.From = Enumerable.FirstOrDefault(mimeMessage.From.Mailboxes)?.Address ?? string.Empty;
+        donnees.Header.To = Enumerable.ToList(Enumerable.Select(mimeMessage.To.Mailboxes, m => m.Address));
+        donnees.Header.Cc = Enumerable.ToList(Enumerable.Select(mimeMessage.Cc.Mailboxes, m => m.Address));
         donnees.Header.InReplyTo = mimeMessage.InReplyTo ?? string.Empty;
 
         donnees.CorpsTexte = mimeMessage.TextBody ?? string.Empty;
         donnees.CorpsHtml = mimeMessage.HtmlBody ?? string.Empty;
 
         foreach (var attachment in mimeMessage.Attachments)
-        {
             if (attachment is MimePart part)
             {
                 var pieceJointe = new PieceJointe
@@ -52,14 +53,13 @@ public class ExtracteurMailService
                     ContentId = part.ContentId ?? string.Empty
                 };
 
-                using var memoryStream = new System.IO.MemoryStream();
-                part.Content?.DecodeTo(memoryStream); 
+                using var memoryStream = new MemoryStream();
+                part.Content?.DecodeTo(memoryStream);
                 pieceJointe.Contenu = memoryStream.ToArray();
                 pieceJointe.Compatibilite = DeterminerCompatibilite(pieceJointe.TypeMime);
 
                 donnees.PiecesJointes.Add(pieceJointe);
             }
-        }
 
         return donnees;
     }
@@ -70,7 +70,7 @@ public class ExtracteurMailService
         using var msg = new Storage.Message(cheminFichier);
 
         donnees.Header.Subject = msg.Subject ?? string.Empty;
-        donnees.Header.Date = (msg.SentOn ?? msg.ReceivedOn ?? System.DateTimeOffset.Now).DateTime;
+        donnees.Header.Date = (msg.SentOn ?? msg.ReceivedOn ?? DateTimeOffset.Now).DateTime;
         donnees.Header.From = msg.Sender?.Email ?? msg.Sender?.DisplayName ?? string.Empty;
 
         foreach (var recipient in msg.Recipients)
@@ -87,7 +87,6 @@ public class ExtracteurMailService
         donnees.CorpsHtml = msg.BodyHtml ?? string.Empty;
 
         foreach (var attachment in msg.Attachments)
-        {
             if (attachment is Storage.Attachment msgAttachment)
             {
                 var nomFichier = msgAttachment.FileName ?? "fichier_sans_nom";
@@ -104,7 +103,6 @@ public class ExtracteurMailService
                 pieceJointe.Compatibilite = DeterminerCompatibilite(pieceJointe.TypeMime);
                 donnees.PiecesJointes.Add(pieceJointe);
             }
-        }
 
         return donnees;
     }
@@ -115,27 +113,25 @@ public class ExtracteurMailService
 
         var typeMimeNettoye = typeMime.ToLowerInvariant().Trim();
 
-        var typesImages = new[] 
-        { 
-            "image/jpeg", "image/jpg", "image/png", "image/gif", 
+        var typesImages = new[]
+        {
+            "image/jpeg", "image/jpg", "image/png", "image/gif",
             "image/bmp", "image/webp", "image/tiff", "image/svg+xml"
         };
 
-        var typesTextes = new[] 
-        { 
-            "text/plain", "text/csv", "text/html", 
+        var typesTextes = new[]
+        {
+            "text/plain", "text/csv", "text/html",
             "text/xml", "text/markdown", "application/json"
         };
 
         var typesDocuments = new[] { "application/pdf" };
 
-        if (System.Linq.Enumerable.Contains(typesImages, typeMimeNettoye) || 
-            System.Linq.Enumerable.Contains(typesTextes, typeMimeNettoye) || 
-            System.Linq.Enumerable.Contains(typesDocuments, typeMimeNettoye))
-        {
+        if (Enumerable.Contains(typesImages, typeMimeNettoye) ||
+            Enumerable.Contains(typesTextes, typeMimeNettoye) ||
+            Enumerable.Contains(typesDocuments, typeMimeNettoye))
             return CompatibilitePdf.FusionnerDansPdf;
-        }
-    
+
         return CompatibilitePdf.ExtraireDansZip;
     }
 }
