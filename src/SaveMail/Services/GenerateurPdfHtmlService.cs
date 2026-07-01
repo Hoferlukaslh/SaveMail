@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using PuppeteerSharp;
 using PuppeteerSharp.Media;
 using SaveMail.Models;
+using System.Text.RegularExpressions;
 
 namespace SaveMail.Services;
 
@@ -75,21 +76,37 @@ public class GenerateurPdfHtmlService : IAsyncDisposable
     }
 
     // 2. La méthode de génération ne lance plus le navigateur, elle utilise celui déjà ouvert
-    public async Task<string> GenererAsync(DonneesMail donnees, string repertoireSortie, bool includeHeader,
-        bool addAttachmentsToPdf)
+    public async Task<string> GenererAsync(DonneesMail donnees, string repertoireSortie, bool includeSignatures, bool addAttachmentsToPdf, string fileNameFormat = "{yyyy}-{MM}-{dd}_{subject}")
     {
         if (_browser == null) await InitialiserNavigateurAsync();
 
         var sujetNettoye = NettoyerNomFichier(donnees.Header.Subject);
         if (string.IsNullOrWhiteSpace(sujetNettoye)) sujetNettoye = "Email_Sans_Sujet";
+        var senderNettoye = NettoyerNomFichier(donnees.Header.From);
 
-        var nomFichier = $"{donnees.Header.Date:yyyy-MM-dd}_{sujetNettoye}.pdf";
+        var nomFichier = fileNameFormat;
+
+        // Remplacement ultra-robuste avec Regex (tolère les espaces internes comme { yy }, ignore la casse)
+        nomFichier = Regex.Replace(nomFichier, @"\{\s*yyyy\s*\}", donnees.Header.Date.ToString("yyyy"), RegexOptions.IgnoreCase);
+        nomFichier = Regex.Replace(nomFichier, @"\{\s*yy\s*\}", donnees.Header.Date.ToString("yy"), RegexOptions.IgnoreCase);
+
+        // Le mois et le jour
+        nomFichier = Regex.Replace(nomFichier, @"\{\s*mm\s*\}", donnees.Header.Date.ToString("MM"), RegexOptions.IgnoreCase);
+        nomFichier = Regex.Replace(nomFichier, @"\{\s*dd\s*\}", donnees.Header.Date.ToString("dd"), RegexOptions.IgnoreCase);
+
+        // Le sujet et l'expéditeur
+        nomFichier = Regex.Replace(nomFichier, @"\{\s*subject\s*\}", sujetNettoye, RegexOptions.IgnoreCase);
+        nomFichier = Regex.Replace(nomFichier, @"\{\s*sender\s*\}", senderNettoye, RegexOptions.IgnoreCase);
+
+        // Sécurité pour s'assurer qu'il y a toujours un nom et la bonne extension
+        if (string.IsNullOrWhiteSpace(nomFichier.Replace(".pdf", ""))) nomFichier = $"Email_{donnees.Header.Date:yyyyMMdd}";
+        if (!nomFichier.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)) nomFichier += ".pdf";
+
         var cheminComplet = Path.Combine(repertoireSortie, nomFichier);
 
         await using var page = await _browser!.NewPageAsync();
 
-        // On passe les options à la construction HTML
-        var htmlFinal = ConstruireHtml(donnees, includeHeader, addAttachmentsToPdf);
+        var htmlFinal = ConstruireHtml(donnees, includeSignatures, addAttachmentsToPdf);
         await page.SetContentAsync(htmlFinal);
 
         await page.PdfAsync(cheminComplet, new PdfOptions
@@ -103,34 +120,130 @@ public class GenerateurPdfHtmlService : IAsyncDisposable
         return cheminComplet;
     }
 
-    private string ConstruireHtml(DonneesMail donnees, bool includeHeader, bool addAttachmentsToPdf)
+    private string ConstruireHtml(DonneesMail donnees, bool includeSignatures, bool addAttachmentsToPdf)
     {
+        // Récupération et préparation du corps du message
         var contenuBody = !string.IsNullOrWhiteSpace(donnees.CorpsHtml)
             ? donnees.CorpsHtml
             : $"<pre style='font-family: sans-serif; white-space: pre-wrap;'>{donnees.CorpsTexte}</pre>";
 
         contenuBody = IntegrerImagesBase64(contenuBody, donnees.PiecesJointes);
+        
+        // 1. EN-TÊTE CLASSIQUE
+        var destinataires = donnees.Header.To.Any() ? string.Join(", ", donnees.Header.To) : "Non spécifié";
+        var copieCc = donnees.Header.Cc.Any() ? string.Join(", ", donnees.Header.Cc) : string.Empty;
 
-        var enTete = string.Empty;
+        // Note : j'ai augmenté la largeur (width: 90px) pour faire de la place à "Répondre à :"
+        var blocEntete = $@"
+        <div style='font-family: Arial, sans-serif; margin-bottom: 15px;'>
+            <h1 style='font-size: 20px; margin: 0 0 15px 0; color: #0f172a;'>{donnees.Header.Subject}</h1>
+            <table style='width: 100%; font-size: 13px; color: #334155; border-collapse: collapse;'>
+                <tr>
+                    <td style='padding: 4px 0; width: 90px; font-weight: bold; color: #64748b;'>De :</td>
+                    <td style='padding: 4px 0; color: #0f172a;'>{donnees.Header.From}</td>
+                </tr>";
 
-        // L'en-tête est inséré uniquement si l'utilisateur l'a demandé
-        if (includeHeader)
+        // Ajout conditionnel du Reply-To (seulement s'il est présent ET différent du From)
+        if (!string.IsNullOrWhiteSpace(donnees.Header.ReplyTo) && 
+            !donnees.Header.ReplyTo.Equals(donnees.Header.From, StringComparison.OrdinalIgnoreCase))
         {
-            var destinataires = donnees.Header.To.Any() ? string.Join(", ", donnees.Header.To) : "Non spécifié";
-            enTete = $@"
-            <div style='background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-bottom: 20px; font-family: Arial, sans-serif;'>
-                <h2 style='margin: 0 0 15px 0; color: #212529;'>{donnees.Header.Subject}</h2>
-                <table style='width: 100%; font-size: 13px; color: #495057; border-collapse: collapse;'>
-                    <tr><td style='width: 100px; padding-bottom: 5px;'><strong>De :</strong></td><td style='padding-bottom: 5px;'>{donnees.Header.From}</td></tr>
-                    <tr><td style='padding-bottom: 5px;'><strong>À :</strong></td><td style='padding-bottom: 5px;'>{destinataires}</td></tr>
-                    <tr><td style='padding-bottom: 5px;'><strong>Date :</strong></td><td style='padding-bottom: 5px;'>{donnees.Header.Date:dd.MM.yyyy HH:mm}</td></tr>
-                </table>
-            </div><hr style='border: 0; height: 1px; background: #dee2e6; margin-bottom: 20px;' />";
+            blocEntete += $@"
+                <tr>
+                    <td style='padding: 4px 0; font-weight: bold; color: #64748b;'>Répondre à :</td>
+                    <td style='padding: 4px 0; color: #0f172a;'>{donnees.Header.ReplyTo}</td>
+                </tr>";
         }
 
-        var htmlFinal = $"<html><body style='margin: 0; padding: 0;'>{enTete}{contenuBody}";
+        blocEntete += $@"
+                <tr>
+                    <td style='padding: 4px 0; font-weight: bold; color: #64748b;'>À :</td>
+                    <td style='padding: 4px 0;'>{destinataires}</td>
+                </tr>";
 
-        // Les pièces jointes (text/images) sont ajoutées uniquement si l'option est active
+        if (!string.IsNullOrEmpty(copieCc))
+        {
+            blocEntete += $@"
+                <tr>
+                    <td style='padding: 4px 0; font-weight: bold; color: #64748b;'>Cc :</td>
+                    <td style='padding: 4px 0;'>{copieCc}</td>
+                </tr>";
+        }
+
+        blocEntete += $@"
+                <tr>
+                    <td style='padding: 4px 0; font-weight: bold; color: #64748b;'>Date :</td>
+                    <td style='padding: 4px 0;'>{donnees.Header.Date:dd MMMM yyyy à HH:mm:ss}</td>
+                </tr>
+            </table>
+        </div>";
+        
+        // 2. BLOC SIGNATURES & PREUVES
+        var blocSignature = string.Empty;
+
+        if (includeSignatures)
+        {
+            var messageId = string.IsNullOrWhiteSpace(donnees.Header.MessageId) ? "Non disponible" : donnees.Header.MessageId;
+            
+            blocSignature = $@"
+        <div style='background-color: #f1f5f9; border-left: 4px solid #3b82f6; padding: 12px; margin-bottom: 15px; font-family: monospace; font-size: 11px; color: #475569;'>
+            <h4 style='margin: 0 0 8px 0; color: #1e293b; font-family: sans-serif; font-size: 12px;'>Traçabilité Serveur & Preuves</h4>
+            <strong>Message-ID:</strong> {messageId}<br/>";
+
+            if (!string.IsNullOrWhiteSpace(donnees.Header.ReturnPath))
+            {
+                var safeReturnPath = donnees.Header.ReturnPath.Replace("<", "&lt;").Replace(">", "&gt;");
+                blocSignature += $"<strong>Return-Path:</strong> {safeReturnPath}<br/>";
+            }
+
+            if (!string.IsNullOrWhiteSpace(donnees.Header.DeliveredTo))
+            {
+                var safeDeliveredTo = donnees.Header.DeliveredTo.Replace("<", "&lt;").Replace(">", "&gt;");
+                blocSignature += $"<strong>Delivered-To:</strong> {safeDeliveredTo}<br/>";
+            }
+            
+            // Séparation pour la sécurité
+            blocSignature += "<div style='margin-top: 8px; margin-bottom: 8px; border-top: 1px dashed #cbd5e1;'></div>";
+
+            // Alignement avec un tableau HTML à 3 colonnes égales
+            blocSignature += "<table style='width: 100%; font-family: monospace; font-size: 11px; color: #475569; border-collapse: collapse;'><tr>";
+
+            if (!string.IsNullOrWhiteSpace(donnees.Header.Spf))
+                blocSignature += $"<td style='width: 33%; text-align: left;'><strong>SPF:</strong> {donnees.Header.Spf}</td>";
+            else
+                blocSignature += "<td style='width: 33%;'></td>"; // Cellule vide pour conserver l'alignement
+
+            if (!string.IsNullOrWhiteSpace(donnees.Header.Dkim))
+                blocSignature += $"<td style='width: 33%; text-align: center;'><strong>DKIM:</strong> {donnees.Header.Dkim}</td>";
+            else
+                blocSignature += "<td style='width: 33%;'></td>";
+
+            if (!string.IsNullOrWhiteSpace(donnees.Header.Dmarc))
+                blocSignature += $"<td style='width: 33%; text-align: right;'><strong>DMARC:</strong> {donnees.Header.Dmarc}</td>";
+            else
+                blocSignature += "<td style='width: 33%;'></td>";
+
+            blocSignature += "</tr></table>";
+
+            // Sécurité de repli si rien n'a été trouvé mais qu'il y a un Auth-Results
+            if (string.IsNullOrWhiteSpace(donnees.Header.Spf) && 
+                string.IsNullOrWhiteSpace(donnees.Header.Dkim) && 
+                string.IsNullOrWhiteSpace(donnees.Header.Dmarc) && 
+                !string.IsNullOrWhiteSpace(donnees.Header.AuthenticationResults))
+            {
+                blocSignature += $"<div style='margin-top: 8px;'><strong>Auth-Results:</strong> {donnees.Header.AuthenticationResults}</div>";
+            }
+            
+            blocSignature += "</div>";
+        }
+        
+        // LIGNE DE SÉPARATION (Indépendante)
+        // Cette ligne se placera toujours en dessous de ce qui précède (en-tête ou signature)
+        var separateur = "<hr style='border: 0; height: 1px; background-color: #cbd5e1; margin-bottom: 25px;' />";
+
+        // On assemble l'en-tête, la signature, la ligne de séparation puis le contenu
+        var htmlFinal = $"<html><body style='margin: 0; padding: 0;'>{blocEntete}{blocSignature}{separateur}{contenuBody}";
+
+        // Gestion de l'inclusion des pièces jointes à la suite
         if (addAttachmentsToPdf)
         {
             var piecesAides = donnees.PiecesJointes.Where(pj => pj.Compatibilite == CompatibilitePdf.FusionnerDansPdf);
@@ -146,8 +259,7 @@ public class GenerateurPdfHtmlService : IAsyncDisposable
                 {
                     var estDejaDansLeCorps = !string.IsNullOrWhiteSpace(pj.ContentId) &&
                                              !string.IsNullOrWhiteSpace(donnees.CorpsHtml) &&
-                                             donnees.CorpsHtml.Contains(pj.ContentId,
-                                                 StringComparison.OrdinalIgnoreCase);
+                                             donnees.CorpsHtml.Contains(pj.ContentId, StringComparison.OrdinalIgnoreCase);
 
                     if (!estDejaDansLeCorps)
                     {

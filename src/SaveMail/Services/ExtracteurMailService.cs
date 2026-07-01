@@ -4,6 +4,7 @@ using System.Linq;
 using MimeKit;
 using MsgReader.Outlook;
 using SaveMail.Models;
+using System.Text.RegularExpressions;
 
 namespace SaveMail.Services;
 
@@ -36,14 +37,43 @@ public class ExtracteurMailService
         donnees.Header.Subject = mimeMessage.Subject ?? string.Empty;
         donnees.Header.Date = mimeMessage.Date.DateTime;
         donnees.Header.From = Enumerable.FirstOrDefault(mimeMessage.From.Mailboxes)?.Address ?? string.Empty;
+        donnees.Header.ReplyTo = Enumerable.FirstOrDefault(mimeMessage.ReplyTo.Mailboxes)?.Address ?? string.Empty;
         donnees.Header.To = Enumerable.ToList(Enumerable.Select(mimeMessage.To.Mailboxes, m => m.Address));
         donnees.Header.Cc = Enumerable.ToList(Enumerable.Select(mimeMessage.Cc.Mailboxes, m => m.Address));
         donnees.Header.InReplyTo = mimeMessage.InReplyTo ?? string.Empty;
+        
+        donnees.Header.ReturnPath = mimeMessage.Headers["Return-Path"]?.Trim() ?? string.Empty;
+        donnees.Header.DeliveredTo = mimeMessage.Headers["Delivered-To"]?.Trim() ?? string.Empty;
 
         donnees.CorpsTexte = mimeMessage.TextBody ?? string.Empty;
         donnees.CorpsHtml = mimeMessage.HtmlBody ?? string.Empty;
+        
+        // extraire les résultats d'authentification
+        donnees.Header.AuthenticationResults = mimeMessage.Headers["Authentication-Results"]?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(donnees.Header.AuthenticationResults))
+        {
+            // Parfois stocké dans ARC-Authentication-Results par Google/Microsoft
+            donnees.Header.AuthenticationResults = mimeMessage.Headers["ARC-Authentication-Results"]?.Trim() ?? string.Empty;
+        }
+        
+        var authResults = donnees.Header.AuthenticationResults;
+        if (!string.IsNullOrWhiteSpace(authResults))
+        {
+            // Cherche le statut de SPF (ex: spf=pass)
+            var matchSpf = Regex.Match(authResults, @"spf=([a-z]+)", RegexOptions.IgnoreCase);
+            if (matchSpf.Success) donnees.Header.Spf = matchSpf.Groups[1].Value.ToUpper();
 
+            // Cherche le statut de DKIM (ex: dkim=pass)
+            var matchDkim = Regex.Match(authResults, @"dkim=([a-z]+)", RegexOptions.IgnoreCase);
+            if (matchDkim.Success) donnees.Header.Dkim = matchDkim.Groups[1].Value.ToUpper();
+
+            // Cherche le statut de DMARC (ex: dmarc=pass)
+            var matchDmarc = Regex.Match(authResults, @"dmarc=([a-z]+)", RegexOptions.IgnoreCase);
+            if (matchDmarc.Success) donnees.Header.Dmarc = matchDmarc.Groups[1].Value.ToUpper();
+        }
+        
         foreach (var attachment in mimeMessage.Attachments)
+        {
             if (attachment is MimePart part)
             {
                 var pieceJointe = new PieceJointe
@@ -60,6 +90,7 @@ public class ExtracteurMailService
 
                 donnees.PiecesJointes.Add(pieceJointe);
             }
+        }
 
         return donnees;
     }
@@ -72,6 +103,7 @@ public class ExtracteurMailService
         donnees.Header.Subject = msg.Subject ?? string.Empty;
         donnees.Header.Date = (msg.SentOn ?? msg.ReceivedOn ?? DateTimeOffset.Now).DateTime;
         donnees.Header.From = msg.Sender?.Email ?? msg.Sender?.DisplayName ?? string.Empty;
+        
 
         foreach (var recipient in msg.Recipients)
         {

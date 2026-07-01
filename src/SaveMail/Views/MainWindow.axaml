@@ -358,14 +358,56 @@
                         </Grid>
 
                         <TextBlock Text="CONTENU DU PDF" Classes="SectionTitle" />
-                        <Grid ColumnDefinitions="*, Auto" Margin="0,5">
-                            <TextBlock Text="Inclure l'en-tête de l'e-mail" VerticalAlignment="Center" />
-                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding IncludeHeader, Mode=TwoWay}" />
+
+                       <Grid ColumnDefinitions="*, Auto" Margin="0,5">
+                            <TextBlock Text="Nom fichier :" VerticalAlignment="Center" />
+                            
+                            <TextBox Grid.Column="1" 
+                                     Text="{Binding FileNameFormat, Mode=TwoWay}" 
+                                     Width="180" 
+                                     Watermark="{}{yyyy}-{mm}-{dd}_{subject}">
+                                     
+                                <ToolTip.Tip>
+                                    <StackPanel Spacing="5" Margin="5">
+                                        <TextBlock Text="Variables de formatage :" FontWeight="Bold" Margin="0,0,0,5" />
+                                        
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <TextBlock Text="{}{yyyy} / {yy}" FontWeight="Bold" Foreground="{DynamicResource PrimaryForeground}" Width="85" />
+                                            <TextBlock Text="Année complète (2026) / Courte (26)" />
+                                        </StackPanel>
+                                        
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <TextBlock Text="{}{MM} / {mm}" FontWeight="Bold" Foreground="{DynamicResource PrimaryForeground}" Width="85" />
+                                            <TextBlock Text="Mois de réception (ex: 07)" />
+                                        </StackPanel>
+                                        
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <TextBlock Text="{}{dd}" FontWeight="Bold" Foreground="{DynamicResource PrimaryForeground}" Width="85" />
+                                            <TextBlock Text="Jour de réception (ex: 01)" />
+                                        </StackPanel>
+                                        
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <TextBlock Text="{}{subject}" FontWeight="Bold" Foreground="{DynamicResource PrimaryForeground}" Width="85" />
+                                            <TextBlock Text="Sujet de l'e-mail" />
+                                        </StackPanel>
+                                        
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <TextBlock Text="{}{sender}" FontWeight="Bold" Foreground="{DynamicResource PrimaryForeground}" Width="85" />
+                                            <TextBlock Text="Expéditeur de l'e-mail" />
+                                        </StackPanel>
+
+                                        <Rectangle Height="1" Fill="{DynamicResource BorderColor}" Margin="0,5" />
+                                        
+                                        <TextBlock Text="Exemple : {yy}{mm}{dd} - {subject}" FontStyle="Italic" Foreground="{DynamicResource SecondaryForeground}" />
+                                        <TextBlock Text="Les formats et les balises sont insensibles à la casse." FontSize="11" Foreground="{DynamicResource SecondaryForeground}" Margin="0,3,0,0" />
+                                    </StackPanel>
+                                </ToolTip.Tip>
+                            </TextBox>
                         </Grid>
 
                         <Grid ColumnDefinitions="*, Auto" Margin="0,5">
-                            <TextBlock Text="Extraire les pièces jointes" VerticalAlignment="Center" />
-                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding ExtractAttachments, Mode=TwoWay}" />
+                            <TextBlock Text="Ajouter signatures (serveurs)" VerticalAlignment="Center" />
+                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding IncludeSignatures, Mode=TwoWay}" />
                         </Grid>
 
 
@@ -480,7 +522,7 @@
 
                     <Rectangle Height="1" Fill="{DynamicResource BorderColor}" Margin="0,5,0,10" />
 
-                    <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="100, *" Margin="0,0,0,10">
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="100, *" Margin="0,0,0,10">
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Auteur :" FontWeight="Bold"
                                    Foreground="{DynamicResource SecondaryForeground}" Margin="0,8" />
                         <TextBlock Grid.Row="0" Grid.Column="1" Text="Lukas Hofer"
@@ -492,20 +534,9 @@
                         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"
                                     Margin="0,8" Spacing="8">
                             <TextBlock Text="{Binding AppVersion}" VerticalAlignment="Center" />
-
-                            <Ellipse Width="10" Height="10" Fill="{DynamicResource Updated}"
-                                     IsVisible="{Binding IsUpToDate}"
-                                     ToolTip.Tip="{Binding VersionStatus}" VerticalAlignment="Center" />
-
-                            <Ellipse Width="10" Height="10" Fill="{DynamicResource UpdateAvalaible}"
-                                     IsVisible="{Binding IsNewVersionAvailable}"
-                                     ToolTip.Tip="{Binding VersionStatus}"
-                                     Cursor="Hand" PointerPressed="LinkReleases_PointerPressed"
-                                     VerticalAlignment="Center" />
-
-                            <Ellipse Width="10" Height="10" Fill="{DynamicResource UpdateError}"
-                                     IsVisible="{Binding IsUpdateError}"
-                                     ToolTip.Tip="{Binding VersionStatus}" VerticalAlignment="Center" />
+                            <Ellipse Width="10" Height="10" Fill="{DynamicResource Updated}" IsVisible="{Binding IsUpToDate}" ToolTip.Tip="{Binding VersionStatus}" VerticalAlignment="Center" />
+                            <Ellipse Width="10" Height="10" Fill="{DynamicResource UpdateAvalaible}" IsVisible="{Binding IsNewVersionAvailable}" ToolTip.Tip="{Binding VersionStatus}" Cursor="Hand" PointerPressed="LinkReleases_PointerPressed" VerticalAlignment="Center" />
+                            <Ellipse Width="10" Height="10" Fill="{DynamicResource UpdateError}" IsVisible="{Binding IsUpdateError}" ToolTip.Tip="{Binding VersionStatus}" VerticalAlignment="Center" />
                         </StackPanel>
 
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Dépôt :" FontWeight="Bold"
@@ -521,6 +552,13 @@
                                    Foreground="{DynamicResource PrimaryForeground}"
                                    TextDecorations="Underline" Cursor="Hand"
                                    PointerPressed="LinkLicense_PointerPressed" Margin="0,8" />
+                        
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Soutien :" FontWeight="Bold"
+                                   Foreground="{DynamicResource SecondaryForeground}" Margin="0,8" />
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="Buy Me a Coffee"
+                                   Foreground="{DynamicResource PrimaryForeground}"
+                                   TextDecorations="Underline" Cursor="Hand"
+                                   PointerPressed="LinkSupport_PointerPressed" Margin="0,8" />
                     </Grid>
                 </StackPanel>
             </Border>

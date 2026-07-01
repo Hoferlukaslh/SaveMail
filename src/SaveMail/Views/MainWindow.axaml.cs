@@ -265,6 +265,9 @@ public partial class MainWindow : Window
         if (_isProcessingLoopActive) return;
         _isProcessingLoopActive = true;
 
+        // Flag pour savoir si l'utilisateur a interrompu le processus
+        bool wasInterrupted = false;
+
         try
         {
             var extracteur = new ExtracteurMailService();
@@ -280,7 +283,8 @@ public partial class MainWindow : Window
             var zipEverything = ViewModel.ZipEverything;
             var archiveUnsupported = ViewModel.ArchiveUnsupported;
             var keepOriginalEmail = ViewModel.KeepOriginalEmail;
-            var includeHeader = ViewModel.IncludeHeader;
+            var includeSignatures = ViewModel.IncludeSignatures;
+            var fileNameFormat = ViewModel.FileNameFormat;
             var addAttachmentsToPdf = ViewModel.AddAttachmentsToPdf;
             var outputDirectory = ViewModel.OutputDirectory;
             var openFolderAtEnd = ViewModel.OpenFolderAtEnd;
@@ -296,6 +300,8 @@ public partial class MainWindow : Window
                 // Vérification à chaque nouveau fichier : l'utilisateur a-t-il mis en pause ?
                 if (ViewModel.ProcessingState != AppProcessingState.Processing)
                 {
+                    wasInterrupted = true; // On marque comme interrompu
+
                     if (fichierMail.IsProcessing && !fichierMail.IsCompleted)
                     {
                         fichierMail.IsProcessing = false;
@@ -332,8 +338,8 @@ public partial class MainWindow : Window
 
                     if (piecesIgnorees > 0) fichierMail.HasWarning = true;
 
-                    var pdfPath = await generateurPdf.GenererAsync(donnees, outputDirectory, includeHeader,
-                        addAttachmentsToPdf);
+                    var pdfPath = await generateurPdf.GenererAsync(donnees, outputDirectory, includeSignatures,
+                        addAttachmentsToPdf, fileNameFormat);
                     fichierMail.Progress = 70;
 
                     if (extractAttachments && addAttachmentsToPdf)
@@ -381,15 +387,34 @@ public partial class MainWindow : Window
                 }
             }
 
-            // Ouverture du dossier si terminé proprement
-            if (ViewModel.ProcessingState == AppProcessingState.Processing && openFolderAtEnd &&
-                Directory.Exists(outputDirectory))
-                Process.Start(new ProcessStartInfo
+            // Ouverture du dossier si terminé proprement (et non interrompu)
+            if (!wasInterrupted && openFolderAtEnd)
+            {
+                try
                 {
-                    FileName = outputDirectory,
-                    UseShellExecute = true,
-                    Verb = "open"
-                });
+                    var fullPath = Path.GetFullPath(outputDirectory);
+
+                    if (Directory.Exists(fullPath))
+                    {
+                        ProcessStartInfo startInfo;
+                        
+                        if (OperatingSystem.IsLinux())
+                        {
+                            startInfo = new ProcessStartInfo("xdg-open", $"\"{fullPath}\"") { UseShellExecute = true };
+                        }
+                        else
+                        {
+                            startInfo = new ProcessStartInfo(fullPath) { UseShellExecute = true };
+                        }
+
+                        Process.Start(startInfo);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Impossible d'ouvrir le dossier de sortie : {ex.Message}");
+                }
+            }
         }
         finally
         {
@@ -439,5 +464,10 @@ public partial class MainWindow : Window
     private void LinkReleases_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         OuvrirLienWeb("https://github.com/Hoferlukaslh/SaveMail/releases");
+    }
+    
+    private void LinkSupport_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        OuvrirLienWeb("https://buymeacoffee.com/hoferlukaslh");
     }
 }

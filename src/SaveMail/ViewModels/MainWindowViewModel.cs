@@ -10,6 +10,7 @@ using Avalonia.Threading;
 using ReactiveUI;
 using SaveMail.Models;
 
+
 namespace SaveMail.ViewModels;
 
 public enum AppProcessingState
@@ -25,7 +26,6 @@ public class MainWindowViewModel : ViewModelBase
     private bool _archiveUnsupported;
     private bool _extractAttachments = true;
     private bool _hasCheckedUpdate;
-    private bool _includeHeader = true;
     private bool _isInfoModalOpen;
     private bool _isNewVersionAvailable;
     private bool _isUpdateError;
@@ -39,6 +39,21 @@ public class MainWindowViewModel : ViewModelBase
 
     private string _versionStatus = "Vérification...";
     private bool _zipEverything = true;
+    
+    private bool _includeSignatures = true;
+    private string _fileNameFormat = "{yyyy}-{mm}-{dd}_{subject}";
+    
+    public bool IncludeSignatures
+    {
+        get => _includeSignatures;
+        set => this.RaiseAndSetIfChanged(ref _includeSignatures, value);
+    }
+
+    public string FileNameFormat
+    {
+        get => _fileNameFormat;
+        set => this.RaiseAndSetIfChanged(ref _fileNameFormat, value);
+    }
 
 
     public bool IsUpToDate
@@ -135,12 +150,7 @@ public class MainWindowViewModel : ViewModelBase
         get => _keepOriginalEmail;
         set => this.RaiseAndSetIfChanged(ref _keepOriginalEmail, value);
     }
-
-    public bool IncludeHeader
-    {
-        get => _includeHeader;
-        set => this.RaiseAndSetIfChanged(ref _includeHeader, value);
-    }
+    
 
     public bool AddAttachmentsToPdf
     {

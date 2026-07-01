@@ -84,10 +84,18 @@ public class EnTeteMail
     public string Subject { get; set; } = string.Empty;
     public DateTime Date { get; set; }
     public string From { get; set; } = string.Empty;
+    public string ReplyTo { get; set; } = string.Empty;
     public List<string> To { get; set; } = new();
     public List<string> Cc { get; set; } = new();
     public string InReplyTo { get; set; } = string.Empty;
     public string AuthenticationResults { get; set; } = string.Empty;
+    public string ReturnPath { get; set; } = string.Empty;
+    public string DeliveredTo { get; set; } = string.Empty;
+
+    // protocoles de sécurité
+    public string Spf { get; set; } = string.Empty;
+    public string Dkim { get; set; } = string.Empty;
+    public string Dmarc { get; set; } = string.Empty;
 }
 
 public class PieceJointe
