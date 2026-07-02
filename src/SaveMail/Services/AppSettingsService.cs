@@ -98,6 +98,9 @@ public class AppSettingsService
 // Classe de données pour les paramètres
 public class AppSettings
 {
+    // Langue par défaut
+    public string Language { get; set; } = "fr"; 
+    
     // Dossier de sortie
     public string OutputDirectory { get; set; } = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
     

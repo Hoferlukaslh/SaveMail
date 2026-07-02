@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using ReactiveUI;
+using SaveMail.Services;
 
 namespace SaveMail.Models;
 
@@ -17,7 +18,7 @@ public class FichierMail : ReactiveObject
 
     private double _progress;
 
-    private string _statusText = "En attente";
+    private string _statusText = TranslationService.Instance["StatusWaiting"];
     public string Path { get; set; } = string.Empty;
     public string Name => System.IO.Path.GetFileName(Path);
     public string Extension => System.IO.Path.GetExtension(Path);
@@ -38,7 +39,7 @@ public class FichierMail : ReactiveObject
     {
         get
         {
-            if (!File.Exists(Path)) return "Inconnu";
+            if (!File.Exists(Path)) return TranslationService.Instance["SizeUnknown"];
             var length = new FileInfo(Path).Length;
             if (length >= 1048576) return $"{length / 1048576.0:F1} MB";
             return $"{length / 1024.0:F1} KB";

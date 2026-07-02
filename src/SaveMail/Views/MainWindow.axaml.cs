@@ -118,7 +118,7 @@ public partial class MainWindow : Window
 
         var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Sélectionner des emails",
+            Title = TranslationService.Instance["PickerSelectEmails"],
             AllowMultiple = true,
             FileTypeFilter = new[]
             {
@@ -149,7 +149,7 @@ public partial class MainWindow : Window
 
         var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
-            Title = "Sélectionner un dossier",
+            Title = TranslationService.Instance["PickerSelectFolder"],
             AllowMultiple = false
         });
 
@@ -243,7 +243,7 @@ public partial class MainWindow : Window
 
         var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
-            Title = "Dossier de sortie"
+            Title = TranslationService.Instance["SettingsOutputFolder"]
         });
 
         if (folders.Any()) ViewModel.OutputDirectory = folders.First().Path.LocalPath;
@@ -307,7 +307,7 @@ public partial class MainWindow : Window
 
             var premierFichier = filesToProcess.First();
             premierFichier.IsProcessing = true;
-            premierFichier.StatusText = "Initialisation du moteur PDF...";
+            premierFichier.StatusText = TranslationService.Instance["StatusInitPdf"];
 
             await generateurPdf.InitialiserNavigateurAsync();
 
@@ -321,7 +321,7 @@ public partial class MainWindow : Window
                     if (fichierMail.IsProcessing && !fichierMail.IsCompleted)
                     {
                         fichierMail.IsProcessing = false;
-                        fichierMail.StatusText = "En attente (stoppé)";
+                        fichierMail.StatusText = TranslationService.Instance["StatusStopped"];
                         fichierMail.Progress = 0;
                     }
 
@@ -335,13 +335,13 @@ public partial class MainWindow : Window
                     fichierMail.HasWarning = false;
                     fichierMail.IsProcessing = true;
                     fichierMail.Progress = 10;
-                    fichierMail.StatusText = "Lecture du fichier...";
+                    fichierMail.StatusText = TranslationService.Instance["StatusReading"];
 
                     var filePath = fichierMail.Path;
 
                     var donnees = await Task.Run(() => extracteur.Extraire(fichierMail));
                     fichierMail.Progress = 40;
-                    fichierMail.StatusText = "Génération du PDF...";
+                    fichierMail.StatusText = TranslationService.Instance["StatusGeneratingPdf"];
 
                     var piecesIgnorees = 0;
 
@@ -360,7 +360,7 @@ public partial class MainWindow : Window
 
                     if (extractAttachments && addAttachmentsToPdf)
                     {
-                        fichierMail.StatusText = "Fusion des pièces jointes...";
+                        fichierMail.StatusText = TranslationService.Instance["StatusMerging"];
                         pdfPath = await Task.Run(() =>
                             fusionPdf.FusionnerPiecesJointes(pdfPath, donnees.PiecesJointes));
                     }
@@ -369,7 +369,7 @@ public partial class MainWindow : Window
 
                     if (zipEverything)
                     {
-                        fichierMail.StatusText = "Création de l'archive...";
+                        fichierMail.StatusText = TranslationService.Instance["StatusZipping"];
                         await Task.Run(() =>
                             generateurZip.CreerArchiveComplete(donnees, filePath, pdfPath, keepOriginalEmail));
 
@@ -377,7 +377,7 @@ public partial class MainWindow : Window
                     }
                     else if (archiveUnsupported && extractAttachments)
                     {
-                        fichierMail.StatusText = "Archivage des fichiers complexes...";
+                        fichierMail.StatusText = TranslationService.Instance["StatusArchivingComplex"];
                         await Task.Run(() => generateurZip.CreerArchive(donnees, pdfPath));
                     }
 
@@ -386,10 +386,9 @@ public partial class MainWindow : Window
                     fichierMail.IsCompleted = true;
 
                     if (fichierMail.HasWarning)
-                        fichierMail.StatusText =
-                            $"Terminé (Avertissement : {piecesIgnorees} pièce(s) ignorée(s) avec ces paramètres).";
+                        fichierMail.StatusText = string.Format(TranslationService.Instance["StatusDoneWarning"], piecesIgnorees);
                     else
-                        fichierMail.StatusText = "Terminé";
+                        fichierMail.StatusText = TranslationService.Instance["StatusDone"];
 
                     ViewModel.RefreshQueue();
                 }
@@ -398,7 +397,7 @@ public partial class MainWindow : Window
                     fichierMail.IsProcessing = false;
                     fichierMail.IsCompleted = false;
                     fichierMail.HasError = true;
-                    fichierMail.StatusText = ex.Message.Length > 25 ? "Erreur de conversion" : ex.Message;
+                    fichierMail.StatusText = ex.Message.Length > 25 ? TranslationService.Instance["StatusError"] : ex.Message;
                     Console.WriteLine($"Erreur avec le fichier {fichierMail.Name} : {ex.Message}");
                 }
             }
@@ -485,5 +484,20 @@ public partial class MainWindow : Window
     private void LinkSupport_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         OuvrirLienWeb("https://buymeacoffee.com/hoferlukaslh");
+    }
+    
+    private void BtnChangeLang_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (sender is RadioButton { Tag: string langCode })
+        {
+            // Charge la nouvelle langue (et la sauvegarde automatiquement)
+            TranslationService.Instance.LoadLanguage(langCode);
+
+            // Met à jour visuellement les boutons dans le ViewModel
+            if (DataContext is MainWindowViewModel vm)
+            {
+                vm.NotifyLanguageChanged();
+            }
+        }
     }
 }

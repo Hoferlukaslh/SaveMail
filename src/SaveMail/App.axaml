@@ -60,6 +60,7 @@
             <x:String x:Key="IconeFolder">&#xE24A;</x:String>
             <x:String x:Key="IconeUpload">&#xE4BE;</x:String>
             <x:String x:Key="IconeFile">&#xE230;</x:String>
+            <x:String x:Key="IconePdf">&#xE702;</x:String>
             <x:String x:Key="IconeExportFile">&#xE232;</x:String>
             <x:String x:Key="IconeMail">&#xE218;</x:String>
             <x:String x:Key="IconeCheckCircle">&#xE184;</x:String>
@@ -78,6 +79,8 @@
                     <SolidColorBrush x:Key="MailIconeBackground">#312e81</SolidColorBrush>
                     <SolidColorBrush x:Key="MailIconeForeground">#818cf8</SolidColorBrush>
                     <SolidColorBrush x:Key="FieldBackground">#020617</SolidColorBrush>
+                    <SolidColorBrush x:Key="FlagsBackground">#35507c</SolidColorBrush>
+                    
                     <SolidColorBrush x:Key="BoutonColorBlue">#3b82f6</SolidColorBrush>
                     <SolidColorBrush x:Key="BoutonColorWhite">#334155</SolidColorBrush>
                     <SolidColorBrush x:Key="BorderColor">#334155</SolidColorBrush>

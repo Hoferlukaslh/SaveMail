@@ -78,7 +78,7 @@ public class ExtracteurMailService
             {
                 var pieceJointe = new PieceJointe
                 {
-                    NomFichier = part.FileName ?? "fichier_sans_nom",
+                    NomFichier = part.FileName ?? TranslationService.Instance["UntitledFile"],
                     TypeMime = part.ContentType.MimeType,
                     ContentId = part.ContentId ?? string.Empty
                 };
@@ -121,7 +121,7 @@ public class ExtracteurMailService
         foreach (var attachment in msg.Attachments)
             if (attachment is Storage.Attachment msgAttachment)
             {
-                var nomFichier = msgAttachment.FileName ?? "fichier_sans_nom";
+                var nomFichier = msgAttachment.FileName ?? TranslationService.Instance["UntitledFile"];
                 var typeMimeDevine = MimeTypes.GetMimeType(nomFichier);
 
                 var pieceJointe = new PieceJointe

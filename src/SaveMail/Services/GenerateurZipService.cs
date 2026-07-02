@@ -34,7 +34,7 @@ public class GenerateurZipService
     {
         var nomBase = Path.GetFileNameWithoutExtension(cheminPdf);
         var cheminDossier = Path.GetDirectoryName(cheminPdf) ?? string.Empty;
-        var cheminZip = Path.Combine(cheminDossier, $"{nomBase}_Archive_Complete.zip");
+        var cheminZip = Path.Combine(cheminDossier, $"{nomBase}{TranslationService.Instance["ZipArchiveSuffix"]}.zip"); 
 
         using (var fileStream = new FileStream(cheminZip, FileMode.Create))
         using (var archive = new ZipArchive(fileStream, ZipArchiveMode.Create, true))
@@ -50,7 +50,7 @@ public class GenerateurZipService
             if (donnees.PiecesJointes.Any())
                 foreach (var pj in donnees.PiecesJointes)
                 {
-                    var entry = archive.CreateEntry($"Pieces_Jointes/{pj.NomFichier}", CompressionLevel.Optimal);
+                    var entry = archive.CreateEntry($"{TranslationService.Instance["ZipAttachmentFolder"]}/{pj.NomFichier}", CompressionLevel.Optimal);
                     using var entryStream = entry.Open();
                     entryStream.Write(pj.Contenu, 0, pj.Contenu.Length);
                 }

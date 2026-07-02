@@ -43,6 +43,9 @@ public class MainWindowViewModel : ViewModelBase
 #endregion
 
     
+    
+
+    
     private bool _archiveUnsupported;
     
     private bool _hasCheckedUpdate;
@@ -53,8 +56,38 @@ public class MainWindowViewModel : ViewModelBase
     private bool _isUpToDate;
     
     private AppProcessingState _processingState = AppProcessingState.Idle;
-    private string _versionStatus = "Vérification...";
+    private string _versionStatus = TranslationService.Instance["VersionChecking"];
 
+    
+    public bool IsLangFr => AppSettingsService.Instance.Current.Language == "fr";
+    public bool IsLangEn => AppSettingsService.Instance.Current.Language == "en";
+    public bool IsLangDe => AppSettingsService.Instance.Current.Language == "de";
+    public bool IsLangIt => AppSettingsService.Instance.Current.Language == "it";
+
+    public void NotifyLanguageChanged()
+    {
+        // 1. Rafraîchir l'interface des boutons "Switch"
+        this.RaisePropertyChanged(nameof(IsLangFr));
+        this.RaisePropertyChanged(nameof(IsLangEn));
+        this.RaisePropertyChanged(nameof(IsLangDe));
+        this.RaisePropertyChanged(nameof(IsLangIt));
+
+        // 2. Rafraîchir le texte du bouton principal d'export
+        this.RaisePropertyChanged(nameof(ProcessButtonText));
+
+        // 3. Rafraîchir les ToolTips du modal en relançant silencieusement la vérification
+        _ = CheckForUpdatesAsync();
+
+        // 4. Rafraîchir le statut "En attente" des fichiers déjà présents dans la file
+        foreach (var file in FilesQueue)
+        {
+            // On ne traduit que ceux qui n'ont pas encore été traités et qui ne sont pas en cours
+            if (!file.IsCompleted && !file.HasError && !file.HasWarning && !file.IsProcessing)
+            {
+                file.StatusText = TranslationService.Instance["StatusWaiting"];
+            }
+        }
+    }
 
     public MainWindowViewModel()
     {
@@ -132,9 +165,9 @@ public class MainWindowViewModel : ViewModelBase
 
     public string ProcessButtonText => ProcessingState switch
     {
-        AppProcessingState.Processing => "Arrêter",
-        AppProcessingState.Paused => "Reprendre",
-        _ => "Convertir"
+        AppProcessingState.Processing => TranslationService.Instance["BtnStop"],
+        AppProcessingState.Paused => TranslationService.Instance["BtnResume"],
+        _ => TranslationService.Instance["BtnConvert"]
     };
 
     // Vrai si on est en train de traiter (pour le bouton rouge)
@@ -264,7 +297,7 @@ public class MainWindowViewModel : ViewModelBase
             IsUpToDate = false;
             IsNewVersionAvailable = false;
             IsUpdateError = false;
-            VersionStatus = "Vérification en cours...";
+            VersionStatus = TranslationService.Instance["VersionChecking"];
         });
 
         try
@@ -279,11 +312,11 @@ public class MainWindowViewModel : ViewModelBase
                 Dispatcher.UIThread.Post(() =>
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)
-                        VersionStatus = "Aucune version publiée en ligne";
+                        VersionStatus = TranslationService.Instance["VersionOffline"];
                     else if (response.StatusCode == HttpStatusCode.Forbidden)
-                        VersionStatus = "Limite d'API GitHub atteinte";
+                        VersionStatus = TranslationService.Instance["UpdateApiLimit"];
                     else
-                        VersionStatus = $"Erreur serveur ({response.StatusCode})";
+                        VersionStatus = string.Format(TranslationService.Instance["UpdateServerError"], response.StatusCode);
 
                     IsUpdateError = true; // Active la pastille rouge
                 });
@@ -305,19 +338,19 @@ public class MainWindowViewModel : ViewModelBase
                     {
                         if (remoteVersion > localVersion)
                         {
-                            VersionStatus = $"Mise à jour disponible ({tag}) - Cliquez ici";
+                            VersionStatus = string.Format(TranslationService.Instance["VersionAvailable"], tag);
                             IsNewVersionAvailable = true; // Active la pastille jaune
                         }
                         else
                         {
-                            VersionStatus = "Application à jour";
+                            VersionStatus = TranslationService.Instance["VersionUpToDate"];
                             IsUpToDate = true; // Active la pastille verte
                         }
                     });
                 else
                     Dispatcher.UIThread.Post(() =>
                     {
-                        VersionStatus = $"Format de version non reconnu ({tag})";
+                        VersionStatus = string.Format(TranslationService.Instance["UpdateFormatError"], tag);
                         IsUpdateError = true;
                     });
             }
@@ -326,7 +359,7 @@ public class MainWindowViewModel : ViewModelBase
         {
             Dispatcher.UIThread.Post(() =>
             {
-                VersionStatus = "Hors ligne ou erreur réseau";
+                VersionStatus = TranslationService.Instance["VersionOffline"];
                 IsUpdateError = true; // Active la pastille rouge
             });
         }

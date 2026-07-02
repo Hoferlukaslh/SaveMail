@@ -29,6 +29,9 @@
         <AvaloniaResource Include="Assets\Images\Logo_blanc_256.ico" />
         <AvaloniaResource Include="Assets\Images\Logo_noir_256.ico" />
 
+        <!-- Langues -->
+        <EmbeddedResource Include="Langs\*.json" />
+
     </ItemGroup>
 
     <ItemGroup>

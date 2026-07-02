@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:SaveMail.ViewModels"
+        xmlns:services="clr-namespace:SaveMail.Services"
         mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
         x:Class="SaveMail.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -113,9 +114,43 @@
                 </Animation>
             </Style.Animations>
         </Style>
+        
+        
+        <!-- Style pour le sélecteur de langue segmenté -->
+        <Style Selector="RadioButton.lang-toggle">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="0,8" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Content="{TemplateBinding Content}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <Style Selector="RadioButton.lang-toggle:pointerover /template/ Border">
+            <Setter Property="Background" Value="#15808080" />
+        </Style>
+
+        <!-- État sélectionné (Bouton Bleu avec texte Blanc) -->
+        <Style Selector="RadioButton.lang-toggle:checked /template/ Border">
+            <Setter Property="Background" Value="{DynamicResource BoutonColorBlue}" />
+        </Style>
+        <Style Selector="RadioButton.lang-toggle:checked /template/ ContentPresenter">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
     </Window.Styles>
 
-    <Grid ColumnDefinitions="*, 360">
+    <Grid ColumnDefinitions="*, 400">
 
         <Grid Grid.Column="0" RowDefinitions="Auto, Auto, *" Margin="30">
 
@@ -142,16 +177,16 @@
                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
 
-                        <TextBlock Text="Glissez-déposez vos emails ici" FontWeight="Bold"
+                        <TextBlock Text="{Binding [DropZoneTitle], Source={x:Static services:TranslationService.Instance}}" FontWeight="Bold"
                                    FontSize="{StaticResource FontSizeMedium}" HorizontalAlignment="Center"
                                    Margin="0,0,0,5" />
-                        <TextBlock Text="Formats supportés : .eml, .msg"
+                        <TextBlock Text="{Binding [DropZoneSubtitle], Source={x:Static services:TranslationService.Instance}}" FontWeight="Bold"
                                    Foreground="{DynamicResource SecondaryForeground}"
                                    HorizontalAlignment="Center" Margin="0,0,0,20" />
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="15">
-                            <Button Classes="ActionBtn" Content="Parcourir les fichiers" Click="BtnAddFiles_Click" />
-                            <Button Classes="ActionBtn" Content="Ajouter un dossier" Click="BtnAddFolder_Click" />
+                            <Button Classes="ActionBtn" Content="{Binding [BtnBrowseFiles], Source={x:Static services:TranslationService.Instance}}" Click="BtnAddFiles_Click" />
+                            <Button Classes="ActionBtn" Content="{Binding [BtnAddFolder], Source={x:Static services:TranslationService.Instance}}" Click="BtnAddFolder_Click" />
                         </StackPanel>
                     </StackPanel>
                 </Grid>
@@ -159,8 +194,8 @@
 
             <Grid Grid.Row="1" ColumnDefinitions="*, Auto" Margin="0,0,0,15">
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="5">
-                    <TextBlock Text="File d'attente (" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}"
-                               VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding [QueueTitle], Source={x:Static services:TranslationService.Instance}}" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}" VerticalAlignment="Center" />
+                    <TextBlock Text=" (" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}" VerticalAlignment="Center" />
                     <TextBlock Text="{Binding QueueCount}" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}"
                                VerticalAlignment="Center" />
                     <TextBlock Text=")" FontWeight="Bold" FontSize="{StaticResource FontSizeNormal}"
@@ -172,7 +207,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="5">
                         <TextBlock Text="{StaticResource IconeTrash}" FontFamily="{StaticResource Phosphor}"
                                    Foreground="{DynamicResource ColorFontRed}" VerticalAlignment="Center" />
-                        <TextBlock Text="Vider la liste" Foreground="{DynamicResource ColorFontRed}"
+                        <TextBlock Text="{Binding [BtnClearQueue], Source={x:Static services:TranslationService.Instance}}" Foreground="{DynamicResource ColorFontRed}"
                                    FontSize="{StaticResource FontSizeSmall}" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
@@ -333,12 +368,12 @@
                                        Foreground="{DynamicResource SecondaryForeground}"
                                        FontSize="{StaticResource IconSizeMedium}"
                                        VerticalAlignment="Center" Margin="0,0,10,0" />
-                            <TextBlock Text="Paramètres d'export" FontWeight="Bold"
+                            <TextBlock Text="{Binding [SettingsTitle], Source={x:Static services:TranslationService.Instance}}" FontWeight="Bold"
                                        FontSize="{StaticResource FontSizeMedium}"
                                        VerticalAlignment="Center" />
                         </StackPanel>
 
-                        <TextBlock Text="DOSSIER DE SORTIE" Classes="SectionTitle" />
+                        <TextBlock Text="{Binding [SettingsOutputFolder], Source={x:Static services:TranslationService.Instance}}" Classes="SectionTitle" />
                         <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,10">
                             <Border Grid.Column="0" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
                                     CornerRadius="{DynamicResource FieldCornerRadius}"
@@ -357,88 +392,89 @@
                                     Click="BtnSelectOutput_Click" />
                         </Grid>
 
-                        <TextBlock Text="CONTENU DU PDF" Classes="SectionTitle" />
+                        <TextBlock Text="{Binding [SectionPdfContent], Source={x:Static services:TranslationService.Instance}}" Classes="SectionTitle" />
 
                        <Grid ColumnDefinitions="*, Auto" Margin="0,5">
-                            <TextBlock Text="Nom fichier :" VerticalAlignment="Center" />
+                           <TextBlock Text="{Binding [PdfFileName], Source={x:Static services:TranslationService.Instance}}" VerticalAlignment="Center" />
                             
                             <TextBox Grid.Column="1" 
                                      Text="{Binding FileNameFormat, Mode=TwoWay}" 
                                      Width="180" 
-                                     Watermark="{}{yyyy}-{mm}-{dd}_{subject}">
+                                     PlaceholderText="{}{yyyy}-{mm}-{dd}_{subject}">
                                      
                                 <ToolTip.Tip>
                                     <StackPanel Spacing="5" Margin="5">
-                                        <TextBlock Text="Variables de formatage :" FontWeight="Bold" Margin="0,0,0,5" />
+                                        <TextBlock Text="{Binding [TooltipFormatVars], Source={x:Static services:TranslationService.Instance}}" FontWeight="Bold" Margin="0,0,0,5" />
                                         
                                         <StackPanel Orientation="Horizontal" Spacing="10">
                                             <TextBlock Text="{}{yyyy} / {yy}" FontWeight="Bold" Foreground="{DynamicResource PrimaryForeground}" Width="85" />
-                                            <TextBlock Text="Année complète (2026) / Courte (26)" />
+                                            <TextBlock Text="{Binding [TooltipYear], Source={x:Static services:TranslationService.Instance}}" />
                                         </StackPanel>
                                         
                                         <StackPanel Orientation="Horizontal" Spacing="10">
                                             <TextBlock Text="{}{MM} / {mm}" FontWeight="Bold" Foreground="{DynamicResource PrimaryForeground}" Width="85" />
-                                            <TextBlock Text="Mois de réception (ex: 07)" />
+                                            <TextBlock Text="{Binding [TooltipMonth], Source={x:Static services:TranslationService.Instance}}" />
                                         </StackPanel>
                                         
                                         <StackPanel Orientation="Horizontal" Spacing="10">
                                             <TextBlock Text="{}{dd}" FontWeight="Bold" Foreground="{DynamicResource PrimaryForeground}" Width="85" />
-                                            <TextBlock Text="Jour de réception (ex: 01)" />
+                                            <TextBlock Text="{Binding [TooltipDay], Source={x:Static services:TranslationService.Instance}}" />
                                         </StackPanel>
                                         
                                         <StackPanel Orientation="Horizontal" Spacing="10">
                                             <TextBlock Text="{}{subject}" FontWeight="Bold" Foreground="{DynamicResource PrimaryForeground}" Width="85" />
-                                            <TextBlock Text="Sujet de l'e-mail" />
+                                            <TextBlock Text="{Binding [TooltipSubject], Source={x:Static services:TranslationService.Instance}}" />
                                         </StackPanel>
                                         
                                         <StackPanel Orientation="Horizontal" Spacing="10">
                                             <TextBlock Text="{}{sender}" FontWeight="Bold" Foreground="{DynamicResource PrimaryForeground}" Width="85" />
-                                            <TextBlock Text="Expéditeur de l'e-mail" />
+                                            <TextBlock Text="{Binding [TooltipSender], Source={x:Static services:TranslationService.Instance}}" />
                                         </StackPanel>
 
                                         <Rectangle Height="1" Fill="{DynamicResource BorderColor}" Margin="0,5" />
                                         
-                                        <TextBlock Text="Exemple : {yy}{mm}{dd} - {subject}" FontStyle="Italic" Foreground="{DynamicResource SecondaryForeground}" />
-                                        <TextBlock Text="Les formats et les balises sont insensibles à la casse." FontSize="11" Foreground="{DynamicResource SecondaryForeground}" Margin="0,3,0,0" />
+                                        <TextBlock Text="{Binding [TooltipExample], Source={x:Static services:TranslationService.Instance}}" FontStyle="Italic" Foreground="{DynamicResource SecondaryForeground}" />
+                                        <TextBlock Text="{Binding [TooltipCase], Source={x:Static services:TranslationService.Instance}}" />
                                     </StackPanel>
                                 </ToolTip.Tip>
                             </TextBox>
                         </Grid>
 
                         <Grid ColumnDefinitions="*, Auto" Margin="0,5">
-                            <TextBlock Text="Ajouter signatures (serveurs)" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding [SettingsIncludeSignatures], Source={x:Static services:TranslationService.Instance}}" VerticalAlignment="Center" />
                             <ToggleSwitch Grid.Column="1" IsChecked="{Binding IncludeSignatures, Mode=TwoWay}" />
                         </Grid>
 
 
                         <Grid ColumnDefinitions="*, Auto" Margin="0,5"
                               IsEnabled="{Binding IsAddAttachmentsToPdfEnabled}">
-                            <TextBlock Text="Ajouter pièce jointe au pdf" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding [SettingsAddAttachmentsToPdf], Source={x:Static services:TranslationService.Instance}}" VerticalAlignment="Center" />
                             <ToggleSwitch Grid.Column="1" IsChecked="{Binding AddAttachmentsToPdf, Mode=TwoWay}" />
                         </Grid>
 
-                        <TextBlock Text="GESTION DES ARCHIVES" Classes="SectionTitle"
+                        <TextBlock Text="{Binding [SectionArchive], Source={x:Static services:TranslationService.Instance}}" Classes="SectionTitle"
                                    IsEnabled="{Binding IsArchiveSectionEnabled}" />
 
                         <Grid ColumnDefinitions="*, Auto" Margin="0,5"
                               IsEnabled="{Binding IsArchiveUnsupportedEnabled}">
-                            <TextBlock Text="Archiver les formats non supportés" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding [SettingsArchiveUnsupported], Source={x:Static services:TranslationService.Instance}}" VerticalAlignment="Center" />
                             <ToggleSwitch Grid.Column="1" IsChecked="{Binding ArchiveUnsupported, Mode=TwoWay}" />
                         </Grid>
 
                         <Grid ColumnDefinitions="*, Auto" Margin="0,5" IsEnabled="{Binding IsArchiveSectionEnabled}">
-                            <TextBlock Text="Tout regrouper dans une archive (.zip)" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding [SettingsZipEverything], Source={x:Static services:TranslationService.Instance}}" VerticalAlignment="Center" />
                             <ToggleSwitch Grid.Column="1" IsChecked="{Binding ZipEverything, Mode=TwoWay}" />
                         </Grid>
 
                         <Grid ColumnDefinitions="*, Auto" Margin="0,5" IsEnabled="{Binding IsArchiveSectionEnabled}">
-                            <TextBlock Text="Conserver l'e-mail d'origine" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding [SettingsKeepOriginal], Source={x:Static services:TranslationService.Instance}}" 
+                                       VerticalAlignment="Center" />
                             <ToggleSwitch Grid.Column="1" IsChecked="{Binding KeepOriginalEmail, Mode=TwoWay}" />
                         </Grid>
 
-                        <TextBlock Text="POST-TRAITEMENT" Classes="SectionTitle" />
+                        <TextBlock Text="{Binding [SectionPostProcess], Source={x:Static services:TranslationService.Instance}}" Classes="SectionTitle" />
                         <Grid ColumnDefinitions="*, Auto" Margin="0,5">
-                            <TextBlock Text="Ouvrir le dossier à la fin" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding [SettingsOpenFolder], Source={x:Static services:TranslationService.Instance}}" VerticalAlignment="Center" />
                             <ToggleSwitch Grid.Column="1" IsChecked="{Binding OpenFolderAtEnd, Mode=TwoWay}" />
                         </Grid>
                     </StackPanel>
@@ -489,7 +525,7 @@
                                            FontFamily="{StaticResource Phosphor}"
                                            Foreground="{DynamicResource InfoFont}" Background="Transparent"
                                            VerticalAlignment="Center" />
-                                <TextBlock Text="Traitement 100% local" Foreground="{DynamicResource InfoFont}"
+                                <TextBlock Text="{Binding [LocalProcessing], Source={x:Static services:TranslationService.Instance}}" Foreground="{DynamicResource InfoFont}"
                                            FontSize="{StaticResource FontSizeSmall}" VerticalAlignment="Center" />
                             </StackPanel>
                         </StackPanel>
@@ -511,7 +547,7 @@
                     BoxShadow="0 10 30 0 #40000000">
                 <StackPanel Spacing="15">
                     <Grid ColumnDefinitions="*, Auto">
-                        <TextBlock Text="À propos de SaveMail" FontWeight="Bold"
+                        <TextBlock Text="{Binding [AboutTitle], Source={x:Static services:TranslationService.Instance}}" FontWeight="Bold"
                                    FontSize="{StaticResource FontSizeLarge}" VerticalAlignment="Center" />
                         <Button Grid.Column="1" Classes="ClearBtn" Padding="5" Click="BtnCloseInfo_Click" Cursor="Hand">
                             <TextBlock Text="{StaticResource IconeClose}" FontFamily="{StaticResource Phosphor}"
@@ -522,13 +558,13 @@
 
                     <Rectangle Height="1" Fill="{DynamicResource BorderColor}" Margin="0,5,0,10" />
 
-                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="100, *" Margin="0,0,0,10">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Auteur :" FontWeight="Bold"
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="100, *" Margin="0,0,0,5">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding [AboutAuthor], Source={x:Static services:TranslationService.Instance}}" FontWeight="Bold"
                                    Foreground="{DynamicResource SecondaryForeground}" Margin="0,8" />
                         <TextBlock Grid.Row="0" Grid.Column="1" Text="Lukas Hofer"
                                    ToolTip.Tip="lukas.hofer.ju@gmail.com" Margin="0,8" />
 
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Version :" FontWeight="Bold"
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding [AboutVersion], Source={x:Static services:TranslationService.Instance}}" FontWeight="Bold"
                                    Foreground="{DynamicResource SecondaryForeground}" Margin="0,8" />
 
                         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"
@@ -541,32 +577,57 @@
                             <Ellipse Width="10" Height="10" Fill="{DynamicResource UpdateAvalaible}" IsVisible="{Binding IsNewVersionAvailable}" ToolTip.Tip="{Binding VersionStatus}" Cursor="Hand" PointerPressed="LinkReleases_PointerPressed" VerticalAlignment="Center" />
                             <TextBlock   IsVisible="{Binding IsNewVersionAvailable}" 
                                          ToolTip.Tip="{Binding VersionStatus}" 
-                                         Text="Cliquez ici pour MàJ"
+                                         Text="{Binding [AboutUpdateClick], Source={x:Static services:TranslationService.Instance}}"
                                          Foreground="{DynamicResource PrimaryForeground}"
                                          TextDecorations="Underline" Cursor="Hand" PointerPressed="LinkReleases_PointerPressed" VerticalAlignment="Center" />
                         </StackPanel>
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Dépôt :" FontWeight="Bold"
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding [AboutRepo], Source={x:Static services:TranslationService.Instance}}" FontWeight="Bold"
                                    Foreground="{DynamicResource SecondaryForeground}" Margin="0,8" />
                         <TextBlock Grid.Row="2" Grid.Column="1" Text="GitHub - Hoferlukaslh/SaveMail"
                                    Foreground="{DynamicResource PrimaryForeground}"
                                    TextDecorations="Underline" Cursor="Hand" PointerPressed="LinkRepo_PointerPressed"
                                    Margin="0,8" />
 
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Licence :" FontWeight="Bold"
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="{Binding [AboutLicense], Source={x:Static services:TranslationService.Instance}}" FontWeight="Bold"
                                    Foreground="{DynamicResource SecondaryForeground}" Margin="0,8" />
                         <TextBlock Grid.Row="3" Grid.Column="1" Text="GPLv3-Only"
                                    Foreground="{DynamicResource PrimaryForeground}"
                                    TextDecorations="Underline" Cursor="Hand"
                                    PointerPressed="LinkLicense_PointerPressed" Margin="0,8" />
                         
-                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Soutien :" FontWeight="Bold"
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="{Binding [AboutSupport], Source={x:Static services:TranslationService.Instance}}" FontWeight="Bold"
                                    Foreground="{DynamicResource SecondaryForeground}" Margin="0,8" />
                         <TextBlock Grid.Row="4" Grid.Column="1" Text="Buy Me a Coffee"
                                    Foreground="{DynamicResource PrimaryForeground}"
                                    TextDecorations="Underline" Cursor="Hand"
                                    PointerPressed="LinkSupport_PointerPressed" Margin="0,8" />
                     </Grid>
+
+                    <!-- NOUVEAU : Sélecteur de langue en mode switch -->
+                    <Border Background="{DynamicResource FlagsBackground}"
+                            BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
+                            CornerRadius="8" Padding="4" Margin="0,5,0,0">
+                        <Grid ColumnDefinitions="*,*,*,*">
+                            
+                                         
+                            <RadioButton Grid.Column="0" Classes="lang-toggle" Content="🇬🇧 EN" Tag="en"
+                                         GroupName="AppLang" Click="BtnChangeLang_Click"
+                                         IsChecked="{Binding IsLangEn, Mode=OneWay}" />
+                            
+                            <RadioButton Grid.Column="1" Classes="lang-toggle" Content="🇫🇷 FR" Tag="fr"
+                                         GroupName="AppLang" Click="BtnChangeLang_Click"
+                                         IsChecked="{Binding IsLangFr, Mode=OneWay}" />
+                                         
+                            <RadioButton Grid.Column="2" Classes="lang-toggle" Content="🇩🇪 DE" Tag="de"
+                                         GroupName="AppLang" Click="BtnChangeLang_Click"
+                                         IsChecked="{Binding IsLangDe, Mode=OneWay}" />
+                                         
+                            <RadioButton Grid.Column="3" Classes="lang-toggle" Content="🇮🇹 IT" Tag="it"
+                                         GroupName="AppLang" Click="BtnChangeLang_Click"
+                                         IsChecked="{Binding IsLangIt, Mode=OneWay}" />
+                        </Grid>
+                    </Border>
                 </StackPanel>
             </Border>
         </Grid>

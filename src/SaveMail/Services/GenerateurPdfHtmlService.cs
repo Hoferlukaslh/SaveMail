@@ -15,7 +15,7 @@ public class GenerateurPdfHtmlService : IAsyncDisposable
 {
     private IBrowser? _browser;
 
-    // 3. Nettoyage : On ferme le navigateur quand on a fini de traiter tous les mails
+    // Nettoyage : On ferme le navigateur quand on a fini de traiter tous les mails
     public async ValueTask DisposeAsync()
     {
         if (_browser != null)
@@ -75,13 +75,13 @@ public class GenerateurPdfHtmlService : IAsyncDisposable
         _browser = await Puppeteer.LaunchAsync(launchOptions);
     }
 
-    // 2. La méthode de génération ne lance plus le navigateur, elle utilise celui déjà ouvert
+    // La méthode de génération ne lance plus le navigateur, elle utilise celui déjà ouvert
     public async Task<string> GenererAsync(DonneesMail donnees, string repertoireSortie, bool includeSignatures, bool addAttachmentsToPdf, string fileNameFormat = "{yyyy}-{MM}-{dd}_{subject}")
     {
         if (_browser == null) await InitialiserNavigateurAsync();
 
         var sujetNettoye = NettoyerNomFichier(donnees.Header.Subject);
-        if (string.IsNullOrWhiteSpace(sujetNettoye)) sujetNettoye = "Email_Sans_Sujet";
+        if (string.IsNullOrWhiteSpace(sujetNettoye)) sujetNettoye = TranslationService.Instance["PdfNoSubject"];
         var senderNettoye = NettoyerNomFichier(donnees.Header.From);
 
         var nomFichier = fileNameFormat;
@@ -129,17 +129,16 @@ public class GenerateurPdfHtmlService : IAsyncDisposable
 
         contenuBody = IntegrerImagesBase64(contenuBody, donnees.PiecesJointes);
         
-        // 1. EN-TÊTE CLASSIQUE
-        var destinataires = donnees.Header.To.Any() ? string.Join(", ", donnees.Header.To) : "Non spécifié";
+       // 1. EN-TÊTE CLASSIQUE
+        var destinataires = donnees.Header.To.Any() ? string.Join(", ", donnees.Header.To) : TranslationService.Instance["PdfNotSpecified"];
         var copieCc = donnees.Header.Cc.Any() ? string.Join(", ", donnees.Header.Cc) : string.Empty;
-
-        // Note : j'ai augmenté la largeur (width: 90px) pour faire de la place à "Répondre à :"
+        
         var blocEntete = $@"
         <div style='font-family: Arial, sans-serif; margin-bottom: 15px;'>
             <h1 style='font-size: 20px; margin: 0 0 15px 0; color: #0f172a;'>{donnees.Header.Subject}</h1>
             <table style='width: 100%; font-size: 13px; color: #334155; border-collapse: collapse;'>
                 <tr>
-                    <td style='padding: 4px 0; width: 90px; font-weight: bold; color: #64748b;'>De :</td>
+                    <td style='padding: 4px 0; width: 110px; font-weight: bold; color: #64748b;'>{TranslationService.Instance["PdfFrom"]}</td>
                     <td style='padding: 4px 0; color: #0f172a;'>{donnees.Header.From}</td>
                 </tr>";
 
@@ -149,14 +148,14 @@ public class GenerateurPdfHtmlService : IAsyncDisposable
         {
             blocEntete += $@"
                 <tr>
-                    <td style='padding: 4px 0; font-weight: bold; color: #64748b;'>Répondre à :</td>
+                    <td style='padding: 4px 0; font-weight: bold; color: #64748b;'>{TranslationService.Instance["PdfReplyTo"]}</td>
                     <td style='padding: 4px 0; color: #0f172a;'>{donnees.Header.ReplyTo}</td>
                 </tr>";
         }
 
         blocEntete += $@"
                 <tr>
-                    <td style='padding: 4px 0; font-weight: bold; color: #64748b;'>À :</td>
+                    <td style='padding: 4px 0; font-weight: bold; color: #64748b;'>{TranslationService.Instance["PdfTo"]}</td>
                     <td style='padding: 4px 0;'>{destinataires}</td>
                 </tr>";
 
@@ -164,15 +163,15 @@ public class GenerateurPdfHtmlService : IAsyncDisposable
         {
             blocEntete += $@"
                 <tr>
-                    <td style='padding: 4px 0; font-weight: bold; color: #64748b;'>Cc :</td>
+                    <td style='padding: 4px 0; font-weight: bold; color: #64748b;'>{TranslationService.Instance["PdfCc"]}</td>
                     <td style='padding: 4px 0;'>{copieCc}</td>
                 </tr>";
         }
 
         blocEntete += $@"
                 <tr>
-                    <td style='padding: 4px 0; font-weight: bold; color: #64748b;'>Date :</td>
-                    <td style='padding: 4px 0;'>{donnees.Header.Date:dd MMMM yyyy à HH:mm:ss}</td>
+                    <td style='padding: 4px 0; font-weight: bold; color: #64748b;'>{TranslationService.Instance["PdfDate"]}</td>
+                    <td style='padding: 4px 0;'>{donnees.Header.Date:dd MMMM yyyy - HH:mm:ss}</td>
                 </tr>
             </table>
         </div>";
@@ -182,11 +181,11 @@ public class GenerateurPdfHtmlService : IAsyncDisposable
 
         if (includeSignatures)
         {
-            var messageId = string.IsNullOrWhiteSpace(donnees.Header.MessageId) ? "Non disponible" : donnees.Header.MessageId;
+            var messageId = string.IsNullOrWhiteSpace(donnees.Header.MessageId) ? TranslationService.Instance["PdfNotAvailable"] : donnees.Header.MessageId;
             
             blocSignature = $@"
         <div style='background-color: #f1f5f9; border-left: 4px solid #3b82f6; padding: 12px; margin-bottom: 15px; font-family: monospace; font-size: 11px; color: #475569;'>
-            <h4 style='margin: 0 0 8px 0; color: #1e293b; font-family: sans-serif; font-size: 12px;'>Traçabilité serveur</h4>
+            <h4 style='margin: 0 0 8px 0; color: #1e293b; font-family: sans-serif; font-size: 12px;'>{TranslationService.Instance["PdfServerTrace"]}</h4>
             <strong>Message-ID:</strong> {messageId}<br/>";
 
             if (!string.IsNullOrWhiteSpace(donnees.Header.ReturnPath))
@@ -253,7 +252,7 @@ public class GenerateurPdfHtmlService : IAsyncDisposable
                 {
                     var contenuTexte = Encoding.UTF8.GetString(pj.Contenu);
                     htmlFinal +=
-                        $@"<div style='page-break-before: always; padding-top: 20px; font-family: Arial, sans-serif;'><h3 style='color: #6c757d; border-bottom: 1px solid #dee2e6; padding-bottom: 5px;'>Pièce jointe : {pj.NomFichier}</h3><pre style='background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; font-size: 12px; white-space: pre-wrap; word-wrap: break-word;'>{contenuTexte}</pre></div>";
+                        $@"<div style='page-break-before: always; padding-top: 20px; font-family: Arial, sans-serif;'><h3 style='color: #6c757d; border-bottom: 1px solid #dee2e6; padding-bottom: 5px;'>{TranslationService.Instance["PdfAttachment"]} {pj.NomFichier}</h3><pre style='background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; font-size: 12px; white-space: pre-wrap; word-wrap: break-word;'>{contenuTexte}</pre></div>";
                 }
                 else if (pj.TypeMime.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
                 {
@@ -267,7 +266,7 @@ public class GenerateurPdfHtmlService : IAsyncDisposable
                         var dataUri = $"data:{pj.TypeMime};base64,{base64String}";
 
                         htmlFinal +=
-                            $@"<div style='page-break-before: always; padding-top: 20px; font-family: Arial, sans-serif; text-align: center;'><h3 style='color: #6c757d; border-bottom: 1px solid #dee2e6; padding-bottom: 5px; text-align: left;'>Pièce jointe : {pj.NomFichier}</h3><img src='{dataUri}' style='max-width: 100%; max-height: 950px; object-fit: contain;' alt='{pj.NomFichier}' /></div>";
+                            $@"<div style='page-break-before: always; padding-top: 20px; font-family: Arial, sans-serif; text-align: center;'><h3 style='color: #6c757d; border-bottom: 1px solid #dee2e6; padding-bottom: 5px; text-align: left;'>{TranslationService.Instance["PdfAttachment"]} {pj.NomFichier}</h3><img src='{dataUri}' style='max-width: 100%; max-height: 950px; object-fit: contain;' alt='{pj.NomFichier}' /></div>";
                     }
                 }
         }
