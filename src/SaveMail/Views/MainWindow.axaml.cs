@@ -21,6 +21,8 @@ public partial class MainWindow : Window
 
     public MainWindow()
     {
+        AppSettingsService.Instance.Load();
+        
         InitializeComponent();
         DataContext = new MainWindowViewModel();
     }
@@ -257,6 +259,20 @@ public partial class MainWindow : Window
             ViewModel.ProcessingState = AppProcessingState.Paused;
             return; // On sort pour laisser la boucle s'arrêter
         }
+        
+        // On met à jour l'objet de configuration avec les valeurs actuelles du ViewModel
+        var settings = AppSettingsService.Instance.Current;
+        settings.OutputDirectory = ViewModel.OutputDirectory;
+        settings.IncludeSignatures = ViewModel.IncludeSignatures;
+        settings.AddAttachmentsToPdf = ViewModel.AddAttachmentsToPdf;
+        settings.ExtractAttachments = ViewModel.ExtractAttachments;
+        settings.ZipEverything = ViewModel.ZipEverything;
+        settings.KeepOriginalEmail = ViewModel.KeepOriginalEmail;
+        settings.FileNameFormat = ViewModel.FileNameFormat;
+        settings.OpenFolderAtEnd = ViewModel.OpenFolderAtEnd;
+
+        // On sauvegarde physiquement le fichier JSON
+        await AppSettingsService.Instance.SaveAsync();
 
         // 2. Si ce n'est pas le cas, on passe en mode Processing
         ViewModel.ProcessingState = AppProcessingState.Processing;

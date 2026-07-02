@@ -1,4 +1,4 @@
-# SaveMail Converter
+# SaveMail
 
 Un utilitaire de bureau moderne, minimaliste et 100 % hors ligne permettant de convertir facilement vos sauvegardes d'emails (`.eml`, `.msg`) en documents PDF. 
 

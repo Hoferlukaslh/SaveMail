@@ -535,8 +535,15 @@
                                     Margin="0,8" Spacing="8">
                             <TextBlock Text="{Binding AppVersion}" VerticalAlignment="Center" />
                             <Ellipse Width="10" Height="10" Fill="{DynamicResource Updated}" IsVisible="{Binding IsUpToDate}" ToolTip.Tip="{Binding VersionStatus}" VerticalAlignment="Center" />
-                            <Ellipse Width="10" Height="10" Fill="{DynamicResource UpdateAvalaible}" IsVisible="{Binding IsNewVersionAvailable}" ToolTip.Tip="{Binding VersionStatus}" Cursor="Hand" PointerPressed="LinkReleases_PointerPressed" VerticalAlignment="Center" />
                             <Ellipse Width="10" Height="10" Fill="{DynamicResource UpdateError}" IsVisible="{Binding IsUpdateError}" ToolTip.Tip="{Binding VersionStatus}" VerticalAlignment="Center" />
+                            
+                            <!-- MàJ disponible -->
+                            <Ellipse Width="10" Height="10" Fill="{DynamicResource UpdateAvalaible}" IsVisible="{Binding IsNewVersionAvailable}" ToolTip.Tip="{Binding VersionStatus}" Cursor="Hand" PointerPressed="LinkReleases_PointerPressed" VerticalAlignment="Center" />
+                            <TextBlock   IsVisible="{Binding IsNewVersionAvailable}" 
+                                         ToolTip.Tip="{Binding VersionStatus}" 
+                                         Text="Cliquez ici pour MàJ"
+                                         Foreground="{DynamicResource PrimaryForeground}"
+                                         TextDecorations="Underline" Cursor="Hand" PointerPressed="LinkReleases_PointerPressed" VerticalAlignment="Center" />
                         </StackPanel>
 
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Dépôt :" FontWeight="Bold"
