@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=SaveMail
+Comment=Description de ton application
+Exec=savemail
+Icon=SaveMail
+Terminal=false
+Type=Application
+Categories=Utility; # Modifie la catégorie selon ton app

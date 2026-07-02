@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=SaveMail
+Comment=Outil d'archivage mail
+Exec=SaveMail
+Icon=SaveMail
+Terminal=false
+Categories=Utility;

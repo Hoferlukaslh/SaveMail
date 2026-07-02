@@ -1,0 +1,28 @@
+# Maintainer: Ton Nom <ton.email@example.com>
+pkgname=savemail-bin
+pkgver=0.1.1
+pkgrel=1
+pkgdesc="Une application .NET Avalonia pour gérer les mails"
+arch=('x86_64')
+url="https://ton-site-web-ou-github.com"
+license=('custom')
+depends=('fontconfig' 'libx11' 'gcc-libs' 'glibc')
+provides=('savemail')
+conflicts=('savemail')
+
+source=("SaveMail"
+        "SaveMail.desktop"
+        "SaveMail.png")
+
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+# Désactiver la suppression des symboles pour ne pas corrompre le bundle .NET
+options=('!strip')
+
+package() {
+    install -Dm755 "${srcdir}/SaveMail" "${pkgdir}/opt/${pkgname}/SaveMail"
+    install -d "${pkgdir}/usr/bin"
+    ln -s "/opt/${pkgname}/SaveMail" "${pkgdir}/usr/bin/savemail"
+    install -Dm644 "${srcdir}/SaveMail.desktop" "${pkgdir}/usr/share/applications/SaveMail.desktop"
+    install -Dm644 "${srcdir}/SaveMail.png" "${pkgdir}/usr/share/pixmaps/SaveMail.png"
+}

@@ -1,0 +1,7 @@
+Package: savemail
+Version: 0.1.1
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: Hofer Lukas <lukas.hofer.ju@gmail.com>
+Description: Outil d'archivage mail.

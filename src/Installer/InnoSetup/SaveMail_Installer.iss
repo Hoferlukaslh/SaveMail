@@ -7,9 +7,9 @@
 #define MyAppPublisher "Lukas"
 #define MyAppURL "https://github.com/Hoferlukaslh/SaveMail"
 #define MyAppExeName "SaveMail_v0.1.1_Win_x64.exe"
-#define SetupLogo "..\SaveMail\Assets\Images\Logo_blanc_256.ico"
+#define SetupLogo "..\..\SaveMail\Assets\Images\Logo_blanc_256.ico"
 #define BuildPath "Executable"
-#define LicensePath "..\..\LICENSE"
+#define LicensePath "..\..\..\LICENSE"
 
 [Setup]
 ; Utilisez Tools > Generate GUID dans Inno Setup pour remplacer cet identifiant
