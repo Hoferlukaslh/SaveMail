@@ -7,6 +7,7 @@ L'application intègre intelligemment le corps de l'email et les pièces jointes
 ## Fonctionnalités
 
 * **Importation intuitive :** Glissez-déposez (Drag & Drop) vos fichiers d'emails directement dans l'interface, ou utilisez l'explorateur de fichiers de votre système.
+* **Support multilingue :** L'interface est disponible nativement en plusieurs langues (anglais, français, allemand, italien).
 * **Gestion de file d'attente :** Traitez plusieurs emails en lot. Suivez l'avancement global et individuel grâce à une barre de progression claire.
 * **Gestion intelligente des pièces jointes :**
   * Les fichiers visuels ou simples (images, textes, autres PDF) sont convertis et ajoutés à la suite de l'email dans le PDF final.
