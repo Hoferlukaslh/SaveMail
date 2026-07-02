@@ -177,7 +177,7 @@ public class GenerateurPdfHtmlService : IAsyncDisposable
             </table>
         </div>";
         
-        // 2. BLOC SIGNATURES & PREUVES
+        // 2. BLOC SIGNATURES 
         var blocSignature = string.Empty;
 
         if (includeSignatures)
@@ -186,7 +186,7 @@ public class GenerateurPdfHtmlService : IAsyncDisposable
             
             blocSignature = $@"
         <div style='background-color: #f1f5f9; border-left: 4px solid #3b82f6; padding: 12px; margin-bottom: 15px; font-family: monospace; font-size: 11px; color: #475569;'>
-            <h4 style='margin: 0 0 8px 0; color: #1e293b; font-family: sans-serif; font-size: 12px;'>Traçabilité Serveur & Preuves</h4>
+            <h4 style='margin: 0 0 8px 0; color: #1e293b; font-family: sans-serif; font-size: 12px;'>Traçabilité serveur</h4>
             <strong>Message-ID:</strong> {messageId}<br/>";
 
             if (!string.IsNullOrWhiteSpace(donnees.Header.ReturnPath))
