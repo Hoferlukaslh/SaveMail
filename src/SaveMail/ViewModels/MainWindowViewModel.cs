@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using ReactiveUI;
 using SaveMail.Models;
+using SaveMail.Services;
 
 
 namespace SaveMail.ViewModels;
@@ -22,26 +23,60 @@ public enum AppProcessingState
 
 public class MainWindowViewModel : ViewModelBase
 {
+#region UserSettings
+    
+    // Dossier de sortie
+    private string _outputDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+    
+    // Contenu du PDF
+    private string _fileNameFormat = "{yyyy}-{mm}-{dd}_{subject}";
+    private bool _includeSignatures = true;
     private bool _addAttachmentsToPdf = true;
-    private bool _archiveUnsupported;
+    
+    // Gestion des archives
     private bool _extractAttachments = true;
+    private bool _zipEverything = true;
+    private bool _keepOriginalEmail = true;
+    
+    // Post-Traitement
+    private bool _openFolderAtEnd = true;
+#endregion
+
+    
+    private bool _archiveUnsupported;
+    
     private bool _hasCheckedUpdate;
     private bool _isInfoModalOpen;
     private bool _isNewVersionAvailable;
     private bool _isUpdateError;
 
     private bool _isUpToDate;
-    private bool _keepOriginalEmail = true;
-    private bool _openFolderAtEnd = true;
-    private string _outputDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
-    private AppProcessingState _processingState = AppProcessingState.Idle;
-
-    private string _versionStatus = "Vérification...";
-    private bool _zipEverything = true;
     
-    private bool _includeSignatures = true;
-    private string _fileNameFormat = "{yyyy}-{mm}-{dd}_{subject}";
+    private AppProcessingState _processingState = AppProcessingState.Idle;
+    private string _versionStatus = "Vérification...";
+
+
+    public MainWindowViewModel()
+    {
+        LoadSettings();
+    }
+    
+    public void LoadSettings()
+    {
+        // On récupère l'objet de configuration actuel
+        var settings = AppSettingsService.Instance.Current;
+
+        // On assigne les valeurs aux champs privés (ce qui mettra à jour l'UI via RaiseAndSetIfChanged)
+        _outputDirectory = settings.OutputDirectory;
+        _fileNameFormat = settings.FileNameFormat;
+        _includeSignatures = settings.IncludeSignatures;
+        _addAttachmentsToPdf = settings.AddAttachmentsToPdf;
+        _extractAttachments = settings.ExtractAttachments;
+        _zipEverything = settings.ZipEverything;
+        _keepOriginalEmail = settings.KeepOriginalEmail;
+        _openFolderAtEnd = settings.OpenFolderAtEnd;
+    }
+
     
     public bool IncludeSignatures
     {
