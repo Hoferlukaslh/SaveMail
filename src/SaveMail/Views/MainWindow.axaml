@@ -604,28 +604,28 @@
                                    PointerPressed="LinkSupport_PointerPressed" Margin="0,8" />
                     </Grid>
 
-                    <!-- NOUVEAU : Sélecteur de langue en mode switch -->
+                    <!-- Sélecteur de langue en mode switch -->
                     <Border Background="{DynamicResource FlagsBackground}"
                             BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
                             CornerRadius="8" Padding="4" Margin="0,5,0,0">
                         <Grid ColumnDefinitions="*,*,*,*">
-                            
-                                         
-                            <RadioButton Grid.Column="0" Classes="lang-toggle" Content="🇬🇧 EN" Tag="en"
-                                         GroupName="AppLang" Click="BtnChangeLang_Click"
-                                         IsChecked="{Binding IsLangEn, Mode=OneWay}" />
-                            
-                            <RadioButton Grid.Column="1" Classes="lang-toggle" Content="🇫🇷 FR" Tag="fr"
-                                         GroupName="AppLang" Click="BtnChangeLang_Click"
-                                         IsChecked="{Binding IsLangFr, Mode=OneWay}" />
-                                         
-                            <RadioButton Grid.Column="2" Classes="lang-toggle" Content="🇩🇪 DE" Tag="de"
-                                         GroupName="AppLang" Click="BtnChangeLang_Click"
-                                         IsChecked="{Binding IsLangDe, Mode=OneWay}" />
-                                         
-                            <RadioButton Grid.Column="3" Classes="lang-toggle" Content="🇮🇹 IT" Tag="it"
-                                         GroupName="AppLang" Click="BtnChangeLang_Click"
-                                         IsChecked="{Binding IsLangIt, Mode=OneWay}" />
+        
+                            <RadioButton Grid.Column="0" Classes="lang-toggle" GroupName="AppLang" Click="BtnChangeLang_Click" IsChecked="{Binding IsLangEn, Mode=OneWay}" Tag="en">
+                                <Svg Path="/Assets/Images/Flags/en.svg" Width="24" Height="24"  />
+                            </RadioButton>
+
+                            <RadioButton Grid.Column="1" Classes="lang-toggle" GroupName="AppLang" Click="BtnChangeLang_Click" IsChecked="{Binding IsLangFr, Mode=OneWay}" Tag="fr">
+                                <Svg Path="/Assets/Images/Flags/fr.svg" Width="24" Height="24"  />
+                            </RadioButton>
+
+                            <RadioButton Grid.Column="2" Classes="lang-toggle" GroupName="AppLang" Click="BtnChangeLang_Click" IsChecked="{Binding IsLangDe, Mode=OneWay}" Tag="de">
+                                <Svg Path="/Assets/Images/Flags/de.svg" Width="24" Height="24"  />
+                            </RadioButton>
+
+                            <RadioButton Grid.Column="3" Classes="lang-toggle" GroupName="AppLang" Click="BtnChangeLang_Click" IsChecked="{Binding IsLangIt, Mode=OneWay}" Tag="it">
+                                <Svg Path="/Assets/Images/Flags/it.svg" Width="24" Height="24"  />
+                            </RadioButton>
+        
                         </Grid>
                     </Border>
                 </StackPanel>

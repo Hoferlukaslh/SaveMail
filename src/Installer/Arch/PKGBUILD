@@ -1,6 +1,6 @@
 # Maintainer: Ton Nom <ton.email@example.com>
 pkgname=savemail-bin
-pkgver=0.1.1
+pkgver=0.1.2
 pkgrel=1
 pkgdesc="Une application .NET Avalonia pour gérer les mails"
 arch=('x86_64')
