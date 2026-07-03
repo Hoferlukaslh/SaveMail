@@ -13,8 +13,6 @@ L'application intègre intelligemment le corps de l'email et les pièces jointes
   * Les fichiers visuels ou simples (images, textes, autres PDF) sont convertis et ajoutés à la suite de l'email dans le PDF final.
   * Les fichiers complexes (vidéos, documents Office, etc.) sont sauvegardés en toute sécurité dans une archive `.zip` accompagnant le PDF.
 * **Options d'exportation personnalisables :** Choisissez librement le répertoire de sortie et votre mode d'export (Tout dans le PDF vs. PDF + Archive ZIP).
-* **Visualisation rapide :** Un bouton d'action permet d'ouvrir immédiatement le PDF généré dans votre navigateur web ou votre lecteur par défaut.
-* **Zéro dépendance (Portable) :** L'application est fournie sous forme d'un exécutable unique et autonome. Aucune installation de framework, de base de données ou de Microsoft Office n'est requise sur la machine.
 * **Multiplateforme :** Fonctionne de manière native sur Windows et Linux.
 
 ## Technologies Utilisées
